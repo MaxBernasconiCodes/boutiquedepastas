@@ -230,16 +230,16 @@ async function remove(id) {
             <input v-model="form.titulo" type="text" required />
           </label>
           <label>
-            Descripción
-            <textarea v-model="form.descripcion" rows="2" />
-          </label>
-          <label>
             Costo ($)
             <input v-model="form.costo" type="number" step="0.01" min="0" required />
           </label>
           <label>
             URL de la foto
             <input v-model="form.foto" type="url" placeholder="https://..." />
+          </label>
+          <label>
+            Descripción (opcional)
+            <textarea v-model="form.descripcion" rows="2" />
           </label>
         </div>
         <div class="form-nuevo-actions">
@@ -275,11 +275,12 @@ async function remove(id) {
             <div v-else-if="editingProductId === element.id" class="list-item list-item-editing product-edit-row">
               <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
               <form class="edit-form" @submit.prevent="submitEdit">
+                <h3>Editar producto</h3>
                 <div class="edit-fields">
                   <label>Título <input v-model="editForm.titulo" type="text" required /></label>
-                  <label>Descripción <textarea v-model="editForm.descripcion" rows="2" /></label>
                   <label>Costo ($) <input v-model="editForm.costo" type="number" step="0.01" min="0" required /></label>
                   <label>URL de la foto <input v-model="editForm.foto" type="url" placeholder="https://..." /></label>
+                  <label>Descripción (opcional) <textarea v-model="editForm.descripcion" rows="2" /></label>
                 </div>
                 <div class="edit-actions">
                   <button type="button" class="btn-small" @click="cancelEdit">Cancelar</button>
@@ -295,7 +296,7 @@ async function remove(id) {
                 :title="element.archivado ? 'Archivado' : 'Activo'">
                 <span class="estado-dot" />
                 <span class="material-symbols-rounded estado-icon">{{ element.archivado ? 'archive' : 'visibility'
-                  }}</span>
+                }}</span>
               </span>
               <div class="acciones">
                 <button type="button" class="btn-small" @click="startEdit(element)">
@@ -362,6 +363,18 @@ async function remove(id) {
 @media (min-width: 1024px) {
   .form-nuevo-fields {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .form-nuevo-fields label:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: stretch;
+    min-height: 0;
+  }
+  .form-nuevo-fields label:nth-child(4) textarea {
+    flex: 1;
+    min-height: 8rem;
+    resize: vertical;
   }
 }
 
@@ -689,6 +702,20 @@ async function remove(id) {
 @media (min-width: 1024px) {
   .edit-fields {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .edit-fields label:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: stretch;
+    min-height: 0;
+  }
+
+  .edit-fields label:nth-child(4) textarea {
+    flex: 1;
+    min-height: 8rem;
+    resize: vertical;
   }
 }
 
