@@ -37,7 +37,7 @@ async function remove(id) {
 <template>
   <div class="admin-pago">
     <h2>Opciones de pago</h2>
-    <p class="hint">Nombre y opcionalmente descripción. La descripción se muestra en el carrito debajo de la opción elegida.</p>
+    <p class="hint">Nombre y opcionalmente descripción. La descripción se muestra en el pedido debajo de la opción elegida.</p>
     <p v-if="error" class="form-error">{{ error }}</p>
 
     <section class="admin-form-card">

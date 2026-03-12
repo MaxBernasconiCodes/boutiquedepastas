@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useProductsStore } from './products'
 
 /**
- * Carrito en sesión. Líneas: { productId, cantidad }.
+ * Pedido en sesión. Líneas: { productId, cantidad }.
  */
 export const useCartStore = defineStore('cart', () => {
   const lines = ref([]) // { productId, cantidad }

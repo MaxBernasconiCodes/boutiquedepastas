@@ -61,7 +61,7 @@ const canSendOrder = computed(() =>
 /** Mensajes de lo que falta (para tooltip al hover cuando el botón está deshabilitado) */
 const validationMessages = computed(() => {
   const list = []
-  if (lineItems.value.length === 0) list.push('Agregá al menos un producto al carrito.')
+  if (lineItems.value.length === 0) list.push('Agregá al menos un producto al pedido.')
   if (!selectedPaymentId.value) list.push('Seleccioná un medio de pago.')
   if (!selectedShippingId.value) list.push('Seleccioná un tipo de envío.')
   if (!nombreCliente.value?.trim()) list.push('Completá tu nombre.')
@@ -101,10 +101,10 @@ function openWhatsApp() {
 
 <template>
   <div class="carrito">
-    <h1>Carrito</h1>
+    <h1>Pedido</h1>
 
     <section v-if="lineItems.length === 0" class="empty">
-      <p>Tu carrito está vacío.</p>
+      <p>Tu pedido está vacío.</p>
       <router-link to="/">Ver productos</router-link>
     </section>
 

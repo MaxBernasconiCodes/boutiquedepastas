@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 /**
  * Opciones de pago (ej: Transferencia, Efectivo).
- * Admin las crea; se muestran en el carrito.
+ * Admin las crea; se muestran en el pedido.
  */
 export const usePaymentOptionsStore = defineStore('paymentOptions', () => {
   const items = ref([])

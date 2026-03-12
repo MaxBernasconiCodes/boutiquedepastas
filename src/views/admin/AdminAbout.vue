@@ -33,7 +33,7 @@ async function guardar() {
 <template>
   <div class="admin-about">
     <h2>Sobre nosotros</h2>
-    <p class="hint">Estos datos se muestran en la página "Sobre nosotros", a la que se llega al hacer clic en el logo del menú. El teléfono se usa también para el enlace de WhatsApp del carrito.</p>
+    <p class="hint">Estos datos se muestran en la página "Sobre nosotros", a la que se llega al hacer clic en el logo del menú. El teléfono se usa también para el enlace de WhatsApp del pedido.</p>
     <p v-if="error" class="form-error">{{ error }}</p>
 
     <section class="admin-form-card">

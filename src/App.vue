@@ -95,13 +95,13 @@ function formatTotal() {
 <template>
   <div id="app-wrapper">
     <!-- Barra superior fija: solo mobile -->
-    <header class="top-bar" aria-label="Resumen del carrito">
+    <header class="top-bar" aria-label="Resumen del pedido">
       <span class="top-bar-count">{{ cartCount }} {{ cartCount === 1 ? 'producto' : 'productos' }}</span>
       <span class="top-bar-total">{{ formatTotal() }}</span>
     </header>
 
-    <!-- Desktop: sidebar (logo + carrito con scroll + Realizar Pedido) -->
-    <aside class="desktop-sidebar" aria-label="Navegación y carrito">
+    <!-- Desktop: sidebar (logo + pedido con scroll + Realizar Pedido) -->
+    <aside class="desktop-sidebar" aria-label="Navegación y pedido">
       <div class="sidebar-logo">
         <router-link to="/" class="sidebar-logo-link">
           <img src="/logo.jpg" alt="Boutique de pastas" class="sidebar-logo-img" />
@@ -116,9 +116,9 @@ function formatTotal() {
         </button>
       </nav>
       <div class="sidebar-cart">
-        <h2 class="sidebar-cart-title">Carrito</h2>
+        <h2 class="sidebar-cart-title">Pedido</h2>
         <div class="sidebar-cart-scroll">
-          <p v-if="sidebarLineItems.length === 0" class="sidebar-cart-empty">Tu carrito está vacío.</p>
+          <p v-if="sidebarLineItems.length === 0" class="sidebar-cart-empty">Tu pedido está vacío.</p>
           <ul v-else class="sidebar-cart-list">
             <li v-for="item in sidebarLineItems" :key="item.productId" class="sidebar-cart-item">
               <span class="sidebar-item-name">{{ item.product.titulo }}</span>
@@ -158,7 +158,7 @@ function formatTotal() {
         <router-link to="/">Nuestras Comidas</router-link>
         <router-link to="/carrito" class="cart-link">
           <span class="material-symbols-rounded size-20">shopping_cart</span>
-          Carrito
+          Pedido
           <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
         </router-link>
       </nav>
@@ -182,7 +182,7 @@ function formatTotal() {
       <div class="bottom-nav-side">
         <router-link to="/carrito" class="nav-btn cart-link" active-class="nav-btn-active">
           <span class="material-symbols-rounded">shopping_cart</span>
-          <span class="nav-label">Carrito</span>
+          <span class="nav-label">Pedido</span>
           <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
         </router-link>
       </div>
@@ -291,7 +291,7 @@ function formatTotal() {
   padding-bottom: calc(var(--mobile-bottom-nav-height) + 1rem);
 }
 
-/* ========== Barra superior fija: resumen carrito ========== */
+/* ========== Barra superior fija: resumen pedido ========== */
 .top-bar {
   position: fixed;
   top: 0;

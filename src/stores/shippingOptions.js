@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 /**
  * Opciones de envío (zona, costo, etc.).
- * Admin las crea; se muestran en el carrito para que el cliente elija.
+ * Admin las crea; se muestran en el pedido para que el cliente elija.
  */
 export const useShippingOptionsStore = defineStore('shippingOptions', () => {
   const items = ref([])

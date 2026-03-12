@@ -60,7 +60,7 @@ function sumar(productId) {
               <div class="product-actions">
                 <template v-if="cantidadEnCarrito(p.id) === 0">
                   <button type="button" class="btn-add" @click="agregar(p.id)">
-                    Agregar al carrito
+                    Agregar al pedido
                   </button>
                 </template>
                 <template v-else>
