@@ -8,10 +8,14 @@ import AdminPago from '@/views/admin/AdminPago.vue'
 import AdminEnvio from '@/views/admin/AdminEnvio.vue'
 import AdminAbout from '@/views/admin/AdminAbout.vue'
 
+/** Posición de scroll de "Nuestras comidas" (tienda) para restaurar al volver */
+let tiendaScrollTop = 0
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior(to, _from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (to.name === 'carrito') return { top: 0 }
+    if (to.name === 'tienda' && from.name) return { top: tiendaScrollTop }
     if (savedPosition) return savedPosition
     return {}
   },
@@ -62,6 +66,13 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  if (from.name === 'tienda' && typeof window !== 'undefined') {
+    tiendaScrollTop = window.scrollY
+  }
+  next()
 })
 
 export default router
