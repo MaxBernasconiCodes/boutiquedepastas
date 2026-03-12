@@ -1,0 +1,135 @@
+/* Fuente para títulos de página (diseño: Mirobrew OneD) */
+@font-face {
+  font-family: 'Mirobrew OneD';
+  src: url('/fonts/Microbrew OneD.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fuente para sidebar y botones (Vactory Sans) */
+@font-face {
+  font-family: 'Vactory Sans';
+  src: url('/fonts/VactorySansRegular-drrAV.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tema Boutique de pastas - paleta definida desde la imagen */
+:root {
+  /* Colores base */
+  --color-fondo: #F6F4F0;
+  --color-fuente: #1B416E;
+  --color-bordes: #EAEAED;
+  --color-acento: #C02F36;
+}
+
+/* Variables semánticas */
+:root {
+  --color-background: var(--color-fondo);
+  --color-background-soft: #EDEAE6;
+  --color-background-mute: #E5E2DE;
+
+  --color-border: var(--color-bordes);
+  --color-border-hover: #D8D8DC;
+
+  --color-heading: var(--color-fuente);
+  --color-text: var(--color-fuente);
+  --color-text-muted: rgba(27, 65, 110, 0.75);
+
+  --color-brand: var(--color-fuente);
+  --color-accent: var(--color-acento);
+
+  --section-gap: 160px;
+  --font-heading: 'Mirobrew OneD', serif;
+  --font-vactory: 'Vactory Sans', sans-serif;
+
+  /* Reserva de espacio para barras fijas en mobile (padding del contenido) */
+  --mobile-top-bar-height: calc(52px + max(0.5rem, env(safe-area-inset-top, 0px)));
+  --mobile-bottom-nav-height: calc(128px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Modo oscuro: se aplica con la clase .theme-dark en <html> (toggle del usuario) */
+html.theme-dark {
+  --color-background: #152a45;
+  --color-background-soft: #1B416E;
+  --color-background-mute: #1e3a5f;
+
+  --color-border: rgba(234, 234, 237, 0.2);
+  --color-border-hover: rgba(234, 234, 237, 0.4);
+
+  --color-heading: var(--color-fondo);
+  --color-text: var(--color-fondo);
+  --color-text-muted: rgba(246, 244, 240, 0.8);
+
+  --color-brand: var(--color-fondo);
+  --color-accent: var(--color-acento);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Títulos de página: fuente de diseño */
+h1 {
+  font-family: var(--font-heading);
+}
+
+/* Sidebar y botones: Vactory Sans */
+button {
+  font-family: var(--font-vactory);
+}
+
+/* Material Symbols Rounded (Google Fonts, cargado online en index.html) */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  vertical-align: middle;
+}
+.material-symbols-rounded.size-18 { font-size: 18px; }
+.material-symbols-rounded.size-20 { font-size: 20px; }
+.material-symbols-rounded.size-24 { font-size: 24px; }
+.material-symbols-rounded.size-32 { font-size: 32px; }
+.material-symbols-rounded.size-40 { font-size: 40px; }
+.material-symbols-rounded.size-48 { font-size: 48px; }
