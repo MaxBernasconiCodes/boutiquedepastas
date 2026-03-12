@@ -17,6 +17,9 @@ const { lines, total } = storeToRefs(cartStore)
 
 const selectedPaymentId = ref(null)
 const selectedShippingId = ref(null)
+const nombreCliente = ref('')
+const direccionEntrega = ref('')
+const observaciones = ref('')
 
 const lineItems = computed(() => {
   return lines.value
@@ -51,6 +54,12 @@ function textoWhatsApp() {
   if (shipping) text += `Envío (${shipping.nombre || 'Envío'}): $${shipping.costo}\n`
   text += `Total: $${totalWithShipping.value}\n\n`
   if (payment) text += `Medio de pago: ${payment.nombre}\n`
+  const nombre = nombreCliente.value?.trim()
+  const direccion = direccionEntrega.value?.trim()
+  const obs = observaciones.value?.trim()
+  if (nombre) text += `Nombre: ${nombre}\n`
+  if (direccion) text += `Dirección de entrega: ${direccion}\n`
+  if (obs) text += `Observaciones: ${obs}\n`
   return encodeURIComponent(text)
 }
 
@@ -120,6 +129,22 @@ function openWhatsApp() {
         <p v-if="selectedShipping" class="costo-envio">
           Costo de envío: ${{ shippingCost }}
         </p>
+      </section>
+
+      <section class="carrito-seccion datos-entrega">
+        <h2>Datos para el pedido</h2>
+        <label class="campo-pedido">
+          Nombre
+          <input v-model="nombreCliente" type="text" placeholder="Tu nombre" />
+        </label>
+        <label class="campo-pedido">
+          Dirección de entrega
+          <input v-model="direccionEntrega" type="text" placeholder="Calle, número, localidad" />
+        </label>
+        <label class="campo-pedido">
+          Observaciones
+          <textarea v-model="observaciones" rows="2" placeholder="Horario preferido, timbre, etc." />
+        </label>
       </section>
 
       <section class="total-final">
@@ -239,5 +264,27 @@ section {
 .sin-opciones {
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+.datos-entrega {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.campo-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+}
+.campo-pedido input,
+.campo-pedido textarea {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.campo-pedido textarea {
+  resize: vertical;
+  min-height: 60px;
 }
 </style>

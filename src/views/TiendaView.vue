@@ -121,7 +121,7 @@ h1 {
 
 .section-subtitle {
   font-family: var(--font-subtitle);
-  font-size: 1.35;
+  font-size: 1.35rem;
   color: var(--color-text-muted);
   margin: 0;
   line-height: 1.4;

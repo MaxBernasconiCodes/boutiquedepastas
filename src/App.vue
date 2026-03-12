@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useCartStore } from '@/stores/cart'
@@ -29,10 +29,28 @@ function toggleTheme() {
   applyTheme(!isDark.value)
 }
 
+/** Anclar el bottom-nav al borde inferior real cuando Chrome oculta la barra (visual viewport) */
+function updateBottomNavOffset() {
+  if (typeof window === 'undefined' || !window.visualViewport) return
+  const vv = window.visualViewport
+  const layoutBottom = window.innerHeight
+  const visualBottom = vv.offsetTop + vv.height
+  const gap = Math.max(0, layoutBottom - visualBottom)
+  document.documentElement.style.setProperty('--bottom-nav-offset', `${gap}px`)
+}
+
 onMounted(() => {
   const saved = localStorage.getItem(STORAGE_KEY)
   const dark = saved === 'dark'
   applyTheme(dark)
+  updateBottomNavOffset()
+  window.visualViewport?.addEventListener('resize', updateBottomNavOffset)
+  window.visualViewport?.addEventListener('scroll', updateBottomNavOffset)
+})
+
+onUnmounted(() => {
+  window.visualViewport?.removeEventListener('resize', updateBottomNavOffset)
+  window.visualViewport?.removeEventListener('scroll', updateBottomNavOffset)
 })
 
 const cartCount = computed(() =>
@@ -302,7 +320,7 @@ function formatTotal() {
 /* ========== Mobile First: barra inferior tipo tabs ========== */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
+  bottom: var(--bottom-nav-offset, 0);
   left: 0;
   right: 0;
   z-index: 100;

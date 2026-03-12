@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import draggable from 'vuedraggable'
 import { useProductsStore } from '@/stores/products'
 import { useSectionsStore } from '@/stores/sections'
@@ -9,7 +9,6 @@ import {
   apiProductsDelete,
   apiUploadProductImage,
   apiSectionsPost,
-  apiSectionsPatch,
   apiSectionsDelete,
   apiReorderItems,
 } from '@/api/admin'
@@ -365,9 +364,6 @@ async function remove(id) {
         <button type="submit">Crear producto</button>
       </form>
       <p v-if="error" class="form-error">{{ error }}</p>
-      <p class="netlify-hint">
-        Los productos se guardan en Neon. La foto puede ser una URL o un archivo subido (Netlify Blobs). En local usá <code>netlify dev</code> para que la subida funcione.
-      </p>
     </section>
 
     <section class="lista">
@@ -393,7 +389,10 @@ async function remove(id) {
                 <div class="section-separator" />
               </div>
               <div class="acciones">
-                <button type="button" class="btn-small danger" @click="removeSection(element.id)">Eliminar</button>
+                <button type="button" class="btn-small danger" @click="removeSection(element.id)" title="Eliminar">
+                  <span class="material-symbols-rounded btn-icon">close</span>
+                  Eliminar
+                </button>
               </div>
             </div>
             <div v-else-if="editingProductId === element.id" class="list-item product-edit-row">
@@ -431,12 +430,27 @@ async function remove(id) {
               <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
               <span class="titulo">{{ element.titulo }}</span>
               <span class="costo">${{ element.costo }}</span>
-              <span class="estado">{{ element.archivado ? 'Archivado' : 'Activo' }}</span>
+              <span class="estado-indicator" :class="element.archivado ? 'estado-archivado' : 'estado-activo'" :title="element.archivado ? 'Archivado' : 'Activo'">
+                <span class="estado-dot" />
+                <span class="material-symbols-rounded estado-icon">{{ element.archivado ? 'archive' : 'visibility' }}</span>
+              </span>
               <div class="acciones">
-                <button type="button" class="btn-small" @click="startEdit(element)">Editar</button>
-                <button v-if="element.archivado" type="button" class="btn-small" @click="unarchive(element.id)">Desarchivar</button>
-                <button v-else type="button" class="btn-small" @click="archive(element.id)">Archivar</button>
-                <button type="button" class="btn-small danger" @click="remove(element.id)">Eliminar</button>
+                <button type="button" class="btn-small" @click="startEdit(element)">
+                  <span class="material-symbols-rounded btn-icon">edit</span>
+                  Editar
+                </button>
+                <button v-if="element.archivado" type="button" class="btn-small" @click="unarchive(element.id)" title="Desarchivar">
+                  <span class="material-symbols-rounded btn-icon">unarchive</span>
+                  Desarchivar
+                </button>
+                <button v-else type="button" class="btn-small" @click="archive(element.id)" title="Archivar">
+                  <span class="material-symbols-rounded btn-icon">archive</span>
+                  Archivar
+                </button>
+                <button type="button" class="btn-small danger" @click="remove(element.id)" title="Eliminar">
+                  <span class="material-symbols-rounded btn-icon">close</span>
+                  Eliminar
+                </button>
               </div>
             </div>
           </div>
@@ -566,13 +580,42 @@ async function remove(id) {
 .product-row .costo {
   font-weight: 600;
 }
-.product-row .estado {
+.estado-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.85rem;
+}
+.estado-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.estado-activo .estado-dot {
+  background: #22c55e;
+}
+.estado-archivado .estado-dot {
+  background: #ef4444;
+}
+.estado-icon {
+  font-size: 18px;
   color: var(--color-text-muted);
+}
+.estado-activo .estado-icon {
+  color: #22c55e;
+}
+.estado-archivado .estado-icon {
+  color: #ef4444;
 }
 .acciones {
   display: flex;
   gap: 0.5rem;
+}
+.btn-icon {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-right: 0.2rem;
 }
 .btn-small {
   padding: 0.25rem 0.5rem;
