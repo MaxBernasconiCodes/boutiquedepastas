@@ -12,12 +12,7 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
 <template>
   <div class="sobre-nosotros">
     <header v-if="data.titulo || data.foto" class="sobre-header">
-      <img
-        v-if="data.foto"
-        :src="data.foto"
-        alt=""
-        class="sobre-foto"
-      />
+      <img v-if="data.foto" :src="data.foto" alt="" class="sobre-foto" />
       <h1 v-if="data.titulo" class="sobre-titulo">{{ data.titulo }}</h1>
     </header>
 
@@ -37,25 +32,13 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
         <a :href="`mailto:${data.email}`">{{ data.email }}</a>
       </p>
       <div v-if="tieneRedes()" class="redes">
-        <a
-          v-if="data.redes?.instagram"
-          :href="data.redes.instagram"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="red-link"
-          aria-label="Instagram"
-        >
+        <a v-if="data.redes?.instagram" :href="data.redes.instagram" target="_blank" rel="noopener noreferrer"
+          class="red-link" aria-label="Instagram">
           <SocialLogo red="instagram" />
           <span>Instagram</span>
         </a>
-        <a
-          v-if="data.redes?.facebook"
-          :href="data.redes.facebook"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="red-link"
-          aria-label="Facebook"
-        >
+        <a v-if="data.redes?.facebook" :href="data.redes.facebook" target="_blank" rel="noopener noreferrer"
+          class="red-link" aria-label="Facebook">
           <SocialLogo red="facebook" />
           <span>Facebook</span>
         </a>
@@ -76,9 +59,11 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
   margin: 0 auto;
   text-align: center;
 }
+
 .sobre-header {
   margin-bottom: 1rem;
 }
+
 .sobre-foto {
   width: 100%;
   max-height: 280px;
@@ -89,29 +74,35 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
   margin-right: auto;
   margin-bottom: 1rem;
 }
+
 .sobre-titulo {
   margin: 0;
   font-size: 1.5rem;
   text-align: center;
 }
+
 .sobre-descripcion {
   margin-bottom: 1.5rem;
   line-height: 1.6;
   text-align: center;
 }
+
 .sobre-descripcion p {
   margin: 0;
   white-space: pre-wrap;
   text-align: center;
 }
+
 .sobre-contacto {
   text-align: center;
 }
+
 .sobre-contacto h2 {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   text-align: center;
 }
+
 .contacto-line {
   display: flex;
   align-items: center;
@@ -120,18 +111,22 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
   gap: 0.5rem;
   margin: 0 0 0.5rem;
 }
+
 .contacto-line .icon {
   font-size: 20px;
   color: var(--color-text-muted);
 }
+
 .contacto-line a {
   color: var(--color-brand);
 }
+
 .contacto-line .hint {
   margin-left: 0.25rem;
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
+
 .redes {
   display: flex;
   flex-wrap: wrap;
@@ -139,6 +134,7 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
   gap: 0.75rem;
   margin-top: 1rem;
 }
+
 .red-link {
   display: inline-flex;
   align-items: center;
@@ -151,40 +147,48 @@ const tieneRedes = () => !!(data.value?.redes?.instagram || data.value?.redes?.f
   color: var(--color-text);
   font-size: 0.95rem;
 }
+
 .red-link:hover {
   background: var(--color-border);
   color: var(--color-accent);
 }
+
 .red-link .social-logo {
   width: 24px;
   height: 24px;
 }
+
 .empty {
   text-align: center;
   padding: 2rem;
   color: var(--color-text-muted);
 }
+
 .empty .hint {
   font-size: 0.9rem;
   margin-top: 0.5rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .sobre-nosotros {
     text-align: left;
   }
+
   .sobre-titulo,
   .sobre-descripcion p,
   .sobre-contacto,
   .sobre-contacto h2 {
     text-align: left;
   }
+
   .sobre-descripcion {
     text-align: left;
   }
+
   .contacto-line {
     justify-content: flex-start;
   }
+
   .redes {
     justify-content: flex-start;
   }

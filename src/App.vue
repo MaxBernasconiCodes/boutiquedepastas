@@ -110,12 +110,8 @@ function formatTotal() {
       <nav class="sidebar-nav">
         <router-link to="/">Nuestras Comidas</router-link>
         <router-link to="/sobre-nosotros">Sobre nosotros</router-link>
-        <button
-          type="button"
-          class="theme-toggle-inline"
-          :aria-label="isDark ? 'Usar modo claro' : 'Usar modo oscuro'"
-          @click="toggleTheme"
-        >
+        <button type="button" class="theme-toggle-inline" :aria-label="isDark ? 'Usar modo claro' : 'Usar modo oscuro'"
+          @click="toggleTheme">
           <span class="material-symbols-rounded size-20">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
         </button>
       </nav>
@@ -153,12 +149,8 @@ function formatTotal() {
         <img src="/logo.jpg" alt="Boutique de pastas" class="logo-img" />
       </router-link>
       <nav class="nav-main">
-        <button
-          type="button"
-          class="theme-toggle"
-          :aria-label="isDark ? 'Usar modo claro' : 'Usar modo oscuro'"
-          @click="toggleTheme"
-        >
+        <button type="button" class="theme-toggle" :aria-label="isDark ? 'Usar modo claro' : 'Usar modo oscuro'"
+          @click="toggleTheme">
           <span class="material-symbols-rounded size-22" aria-hidden="true">
             {{ isDark ? 'light_mode' : 'dark_mode' }}
           </span>
@@ -215,6 +207,7 @@ function formatTotal() {
 .app-header-desktop {
   display: none;
 }
+
 .app-header {
   align-items: center;
   justify-content: space-between;
@@ -222,24 +215,29 @@ function formatTotal() {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-background-soft);
 }
+
 .logo {
   display: block;
   max-width: 100%;
 }
+
 .logo-img {
   width: 100%;
   height: auto;
   object-fit: contain;
   display: block;
 }
+
 .nav-main {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
+
 .nav-main a {
   padding: 0.25rem 0.5rem;
 }
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -253,19 +251,23 @@ function formatTotal() {
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .theme-toggle:hover {
   background: var(--color-background-mute);
   color: var(--color-accent);
 }
+
 .theme-toggle .size-22 {
   font-size: 22px;
 }
+
 .cart-link {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
+
 .cart-badge {
   position: absolute;
   top: -4px;
@@ -280,6 +282,7 @@ function formatTotal() {
   color: white;
   border-radius: 9px;
 }
+
 .app-main {
   flex: 1;
   padding: 1rem;
@@ -306,11 +309,13 @@ function formatTotal() {
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 2px 8px rgba(27, 65, 110, 0.06);
 }
+
 .top-bar-count {
   font-size: 0.9rem;
   color: var(--color-text);
   font-weight: 500;
 }
+
 .top-bar-total {
   font-size: 1rem;
   font-weight: 700;
@@ -335,6 +340,7 @@ function formatTotal() {
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -2px 12px rgba(27, 65, 110, 0.08);
 }
+
 .bottom-nav-side {
   flex: 1;
   display: flex;
@@ -344,6 +350,7 @@ function formatTotal() {
   padding-bottom: 0.5rem;
   max-width: 140px;
 }
+
 .bottom-nav-logo {
   flex-shrink: 0;
   display: flex;
@@ -358,12 +365,14 @@ function formatTotal() {
   border-bottom: none;
   box-shadow: 0 -2px 12px rgba(27, 65, 110, 0.08);
 }
+
 .bottom-nav-logo-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
 }
+
 .nav-btn {
   display: flex;
   flex-direction: column;
@@ -377,24 +386,30 @@ function formatTotal() {
   border-radius: 12px;
   transition: background 0.2s, color 0.2s;
 }
+
 .nav-btn .material-symbols-rounded {
   font-size: 24px;
 }
+
 .nav-btn:hover {
   color: var(--color-text);
   background: var(--color-background-mute);
 }
+
 .nav-btn-active {
   color: var(--color-accent);
   font-weight: 600;
 }
+
 .nav-label {
   font-size: 0.7rem;
   line-height: 1.1;
 }
+
 .nav-btn.cart-link {
   position: relative;
 }
+
 .nav-btn.cart-link .cart-badge {
   position: absolute;
   top: 2px;
@@ -408,14 +423,16 @@ function formatTotal() {
 }
 
 /* Desktop: sidebar visible, main con margen; ocultar top-bar y bottom-nav */
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   #app-wrapper {
     padding-bottom: 0;
     flex-direction: row;
   }
+
   .top-bar {
     display: none;
   }
+
   .desktop-sidebar {
     display: flex;
     flex-direction: column;
@@ -431,24 +448,28 @@ function formatTotal() {
     overflow: hidden;
     font-family: var(--font-vactory);
   }
+
   .sidebar-logo {
     flex-shrink: 0;
     width: 20rem;
     padding: 1rem;
     border-bottom: 1px solid var(--color-border);
   }
+
   .sidebar-logo-link {
     display: block;
     text-decoration: none;
     color: inherit;
     width: 100%;
   }
+
   .sidebar-logo-img {
     width: 100%;
     height: auto;
     object-fit: contain;
     display: block;
   }
+
   .sidebar-nav {
     flex-shrink: 0;
     display: flex;
@@ -458,17 +479,20 @@ function formatTotal() {
     border-bottom: 1px solid var(--color-border);
     font-size: 0.9rem;
   }
+
   .sidebar-nav a {
     color: var(--color-text);
     text-decoration: none;
     padding: 0.25rem 0.5rem;
     border-radius: 6px;
   }
+
   .sidebar-nav a:hover,
   .sidebar-nav a.router-link-active {
     color: var(--color-accent);
     background: var(--color-background-mute);
   }
+
   .theme-toggle-inline {
     display: inline-flex;
     align-items: center;
@@ -480,13 +504,16 @@ function formatTotal() {
     color: var(--color-text);
     cursor: pointer;
   }
+
   .theme-toggle-inline:hover {
     background: var(--color-background-mute);
     color: var(--color-accent);
   }
+
   .theme-toggle-inline .size-20 {
     font-size: 20px;
   }
+
   .sidebar-cart {
     flex: 1;
     min-height: 0;
@@ -494,27 +521,32 @@ function formatTotal() {
     flex-direction: column;
     padding: 0 1rem 1rem;
   }
+
   .sidebar-cart-title {
     flex-shrink: 0;
     margin: 0.75rem 0 0.5rem;
     font-size: 1.1rem;
   }
+
   .sidebar-cart-scroll {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
   }
+
   .sidebar-cart-empty {
     font-size: 0.9rem;
     color: var(--color-text-muted);
     margin: 0.5rem 0;
   }
+
   .sidebar-cart-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
+
   .sidebar-cart-item {
     padding: 0.6rem 0;
     border-bottom: 1px solid var(--color-border);
@@ -525,6 +557,7 @@ function formatTotal() {
     align-items: center;
     font-size: 0.9rem;
   }
+
   .sidebar-item-name {
     grid-column: 1;
     font-weight: 500;
@@ -532,17 +565,20 @@ function formatTotal() {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   .sidebar-item-precio {
     grid-column: 2;
     color: var(--color-text-muted);
     font-size: 0.85rem;
   }
+
   .sidebar-item-qty {
     grid-column: 1;
     display: flex;
     align-items: center;
     gap: 0.25rem;
   }
+
   .qty-btn {
     display: inline-flex;
     align-items: center;
@@ -556,34 +592,41 @@ function formatTotal() {
     color: var(--color-text);
     cursor: pointer;
   }
+
   .qty-btn:hover {
     background: var(--color-border);
     color: var(--color-accent);
   }
+
   .qty-btn .material-symbols-rounded {
     font-size: 18px;
   }
+
   .qty-num {
     min-width: 1.5rem;
     text-align: center;
     font-weight: 600;
     font-size: 0.9rem;
   }
+
   .sidebar-item-subtotal {
     grid-column: 2;
     font-weight: 600;
     font-size: 0.9rem;
   }
+
   .sidebar-cart-footer {
     flex-shrink: 0;
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
     margin-top: 0.5rem;
   }
+
   .sidebar-total {
     margin: 0 0 0.5rem;
     font-size: 1rem;
   }
+
   .btn-realizar-pedido {
     display: block;
     width: 100%;
@@ -596,18 +639,22 @@ function formatTotal() {
     font-weight: 600;
     font-size: 0.95rem;
   }
+
   .btn-realizar-pedido:hover {
     filter: brightness(0.95);
   }
+
   .app-header-desktop {
     display: none;
   }
+
   .app-main {
     flex: 1;
     margin-left: 20rem;
     padding-bottom: 1rem;
     padding-top: 1rem;
   }
+
   .bottom-nav {
     display: none;
   }

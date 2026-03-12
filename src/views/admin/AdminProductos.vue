@@ -202,7 +202,8 @@ async function remove(id) {
 
     <section class="secciones-block">
       <h3>Nueva sección</h3>
-      <p class="hint">Agregá secciones para agrupar productos en la tienda. Arrastrá los ítems en el listado para cambiar el orden.</p>
+      <p class="hint">Agregá secciones para agrupar productos en la tienda. Arrastrá los ítems en el listado para
+        cambiar el orden.</p>
       <form class="form-section-create" @submit.prevent="addSection">
         <div class="form-section-fields">
           <label>
@@ -251,17 +252,10 @@ async function remove(id) {
 
     <section class="lista">
       <h3>Orden de secciones y productos</h3>
-      <p class="hint">Arrastrá los ítems para cambiar el orden. Las secciones definen los títulos; los productos que queden debajo de una sección se mostrarán en ese grupo en la tienda.</p>
-      <draggable
-        v-model="orderedListRef"
-        :item-key="itemKey"
-        handle=".drag-handle"
-        ghost-class="drag-ghost"
-        chosen-class="drag-chosen"
-        drag-class="drag-dragging"
-        @start="onDragStart"
-        @end="onReorderEnd"
-      >
+      <p class="hint">Arrastrá los ítems para cambiar el orden. Las secciones definen los títulos; los productos que
+        queden debajo de una sección se mostrarán en ese grupo en la tienda.</p>
+      <draggable v-model="orderedListRef" :item-key="itemKey" handle=".drag-handle" ghost-class="drag-ghost"
+        chosen-class="drag-chosen" drag-class="drag-dragging" @start="onDragStart" @end="onReorderEnd">
         <template #item="{ element }">
           <div class="list-item-wrap">
             <div v-if="element.type === 'section'" class="list-item list-item-section">
@@ -297,16 +291,19 @@ async function remove(id) {
               <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
               <span class="titulo">{{ element.titulo }}</span>
               <span class="costo">${{ element.costo }}</span>
-              <span class="estado-indicator" :class="element.archivado ? 'estado-archivado' : 'estado-activo'" :title="element.archivado ? 'Archivado' : 'Activo'">
+              <span class="estado-indicator" :class="element.archivado ? 'estado-archivado' : 'estado-activo'"
+                :title="element.archivado ? 'Archivado' : 'Activo'">
                 <span class="estado-dot" />
-                <span class="material-symbols-rounded estado-icon">{{ element.archivado ? 'archive' : 'visibility' }}</span>
+                <span class="material-symbols-rounded estado-icon">{{ element.archivado ? 'archive' : 'visibility'
+                  }}</span>
               </span>
               <div class="acciones">
                 <button type="button" class="btn-small" @click="startEdit(element)">
                   <span class="material-symbols-rounded btn-icon">edit</span>
                   Editar
                 </button>
-                <button v-if="element.archivado" type="button" class="btn-small" @click="unarchive(element.id)" title="Desarchivar">
+                <button v-if="element.archivado" type="button" class="btn-small" @click="unarchive(element.id)"
+                  title="Desarchivar">
                   <span class="material-symbols-rounded btn-icon">unarchive</span>
                   Desarchivar
                 </button>
@@ -323,7 +320,8 @@ async function remove(id) {
           </div>
         </template>
       </draggable>
-      <p v-if="orderedListRef.length === 0" class="empty">No hay secciones ni productos. Creá una sección o un producto arriba.</p>
+      <p v-if="orderedListRef.length === 0" class="empty">No hay secciones ni productos. Creá una sección o un producto
+        arriba.</p>
     </section>
   </div>
 </template>
@@ -332,42 +330,48 @@ async function remove(id) {
 .admin-productos h2 {
   margin-top: 0;
 }
+
 .form-nuevo {
   margin-bottom: 2rem;
   padding: 1.25rem 1.5rem;
   background: var(--color-background-soft);
   border-radius: 12px;
-  width: 100%;
   box-sizing: border-box;
 }
+
 .form-nuevo h3 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
+
 .form-nuevo-producto {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
   gap: 1rem;
 }
+
 .form-nuevo-fields {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem 1.25rem;
   width: 100%;
 }
-@media (min-width: 640px) {
+
+@media (min-width: 1024px) {
   .form-nuevo-fields {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 .form-nuevo-fields label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.95rem;
 }
+
 .form-nuevo-fields input,
 .form-nuevo-fields textarea {
   width: 100%;
@@ -376,32 +380,39 @@ async function remove(id) {
   border: 1px solid var(--color-border);
   box-sizing: border-box;
 }
+
 .form-nuevo-actions {
   display: flex;
   justify-content: flex-end;
 }
+
 .form-nuevo-actions button[type="submit"] {
   padding: 0.45rem 1rem;
 }
+
 .form-error {
   margin-top: 0.5rem;
   font-size: 0.9rem;
   color: var(--color-accent);
 }
+
 .netlify-hint {
   font-size: 0.85rem;
   color: var(--color-text-muted);
   margin-top: 0.75rem;
 }
+
 .netlify-hint code {
   font-size: 0.8em;
   background: var(--color-background-mute);
   padding: 0.1em 0.3em;
   border-radius: 4px;
 }
+
 .lista :deep(.list-item-wrap) {
   margin-bottom: 0.5rem;
 }
+
 .list-item {
   display: flex;
   flex-wrap: wrap;
@@ -412,10 +423,12 @@ async function remove(id) {
   border-radius: 8px;
   background: var(--color-background);
 }
+
 .list-item-editing {
   background: var(--color-background-soft);
   padding: 1rem 0.75rem;
 }
+
 .drag-handle {
   cursor: grab;
   padding: 0.25rem 0.35rem;
@@ -423,25 +436,30 @@ async function remove(id) {
   user-select: none;
   touch-action: none;
 }
+
 .drag-handle:active {
   cursor: grabbing;
 }
+
 .list-item-section .section-block {
   flex: 1;
   min-width: 0;
 }
+
 .section-block-title {
   font-family: var(--font-heading);
   font-size: 1.1rem;
   margin: 0 0 0.2rem;
   color: var(--color-heading);
 }
+
 .section-block-subtitle {
   font-family: var(--font-subtitle);
   font-size: 0.9rem;
   color: var(--color-text-muted);
   margin: 0 0 0.5rem;
 }
+
 .section-separator {
   width: 100%;
   grid-column: 1 / -1;
@@ -449,77 +467,97 @@ async function remove(id) {
   border-bottom: 2px solid var(--color-border);
   margin-top: 0.25rem;
 }
+
 .list-item-section {
   flex-direction: column;
   align-items: stretch;
 }
+
 .list-item-section .section-block {
   width: 100%;
 }
+
 .list-item-section .acciones {
   align-self: flex-end;
 }
+
 .drag-ghost {
   opacity: 0.5;
   background: var(--color-background-mute);
 }
+
 .drag-chosen {
   background: var(--color-background-soft);
 }
+
 .drag-dragging {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
 .lista ul {
   list-style: none;
   padding: 0;
 }
+
 .product-row {
   border-radius: 8px;
 }
+
 .product-row .titulo {
   flex: 1;
   min-width: 120px;
 }
+
 .product-row .costo {
   font-weight: 600;
 }
+
 .estado-indicator {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
 }
+
 .estado-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
+
 .estado-activo .estado-dot {
   background: #22c55e;
 }
+
 .estado-archivado .estado-dot {
   background: #ef4444;
 }
+
 .estado-icon {
   font-size: 18px;
   color: var(--color-text-muted);
 }
+
 .estado-activo .estado-icon {
   color: #22c55e;
 }
+
 .estado-archivado .estado-icon {
   color: #ef4444;
 }
+
 .acciones {
   display: flex;
   gap: 0.5rem;
 }
+
 .btn-icon {
   font-size: 18px;
   vertical-align: middle;
   margin-right: 0.2rem;
 }
+
 .btn-small {
   padding: 0.25rem 0.5rem;
   font-size: 0.85rem;
@@ -528,29 +566,35 @@ async function remove(id) {
   border-radius: 4px;
   background: var(--color-background);
 }
+
 .btn-small.danger {
   border-color: #c00;
   color: #c00;
 }
+
 .empty {
   color: var(--color-text-muted);
 }
+
 .secciones-block {
   margin-bottom: 2rem;
   padding: 1.25rem 1.5rem;
   background: var(--color-background-soft);
   border-radius: 12px;
 }
+
 .secciones-block h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
 }
+
 .secciones-block .hint {
   font-size: 0.9rem;
   color: var(--color-text-muted);
   margin-bottom: 1rem;
 }
+
 .form-section-create {
   display: flex;
   flex-wrap: wrap;
@@ -558,23 +602,27 @@ async function remove(id) {
   gap: 1rem;
   margin-bottom: 0;
 }
+
 .form-section-fields {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem 1.25rem;
   width: 100%;
 }
-@media (min-width: 640px) {
+
+@media (min-width: 1024px) {
   .form-section-fields {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 .form-section-fields label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.95rem;
 }
+
 .form-section-fields input {
   width: 100%;
   min-width: 0;
@@ -583,16 +631,20 @@ async function remove(id) {
   border: 1px solid var(--color-border);
   box-sizing: border-box;
 }
+
 .form-section-actions {
   display: flex;
   justify-content: flex-end;
 }
+
 .form-section-actions button[type="submit"] {
   padding: 0.45rem 1rem;
 }
+
 .product-group {
   margin-bottom: 1.5rem;
 }
+
 .product-group .group-title {
   font-size: 1rem;
   margin: 0 0 0.5rem 0;
@@ -600,18 +652,22 @@ async function remove(id) {
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text-muted);
 }
+
 .product-group ul {
   list-style: none;
   padding: 0;
 }
+
 .product-row .pos {
   font-size: 0.85rem;
   color: var(--color-text-muted);
   min-width: 2rem;
 }
+
 .product-edit-row {
   border-bottom: none;
 }
+
 .product-edit-row .edit-form {
   flex: 1;
   min-width: 0;
@@ -621,6 +677,7 @@ async function remove(id) {
   flex-direction: column;
   gap: 1rem;
 }
+
 .edit-fields {
   display: grid;
   grid-template-columns: 1fr;
@@ -628,11 +685,13 @@ async function remove(id) {
   width: 100%;
   min-width: 0;
 }
-@media (min-width: 640px) {
+
+@media (min-width: 1024px) {
   .edit-fields {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 .edit-fields label {
   display: flex;
   flex-direction: column;
@@ -640,6 +699,7 @@ async function remove(id) {
   gap: 0.25rem;
   min-width: 0;
 }
+
 .edit-fields input,
 .edit-fields textarea {
   width: 100%;
@@ -649,6 +709,7 @@ async function remove(id) {
   border: 1px solid var(--color-border);
   box-sizing: border-box;
 }
+
 .edit-actions {
   display: flex;
   gap: 0.5rem;
