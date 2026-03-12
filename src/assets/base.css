@@ -16,10 +16,10 @@
   font-display: swap;
 }
 
-/* Fuente para subtítulos de sección (Adelia) */
+/* Fuente para subtítulos de sección (RusticRoadway) */
 @font-face {
-  font-family: 'Adelia';
-  src: url('/fonts/adelia.ttf') format('truetype');
+  font-family: 'RusticRoadway';
+  src: url('/fonts/RusticRoadway.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -28,20 +28,20 @@
 /* Tema Boutique de pastas - paleta definida desde la imagen */
 :root {
   /* Colores base */
-  --color-fondo: #F6F4F0;
-  --color-fuente: #1B416E;
-  --color-bordes: #EAEAED;
-  --color-acento: #C02F36;
+  --color-fondo: #f6f4f0;
+  --color-fuente: #1b416e;
+  --color-bordes: #eaeaed;
+  --color-acento: #c02f36;
 }
 
 /* Variables semánticas */
 :root {
   --color-background: var(--color-fondo);
-  --color-background-soft: #EDEAE6;
-  --color-background-mute: #E5E2DE;
+  --color-background-soft: #edeae6;
+  --color-background-mute: #e5e2de;
 
   --color-border: var(--color-bordes);
-  --color-border-hover: #D8D8DC;
+  --color-border-hover: #d8d8dc;
 
   --color-heading: var(--color-fuente);
   --color-text: var(--color-fuente);
@@ -53,7 +53,7 @@
   --section-gap: 160px;
   --font-heading: 'Mirobrew OneD', serif;
   --font-vactory: 'Vactory Sans', sans-serif;
-  --font-subtitle: 'Adelia', cursive;
+  --font-subtitle: 'RusticRoadway', cursive;
 
   /* Reserva de espacio para barras fijas en mobile (padding del contenido) */
   --mobile-top-bar-height: calc(52px + max(0.5rem, env(safe-area-inset-top, 0px)));
@@ -63,7 +63,7 @@
 /* Modo oscuro: se aplica con la clase .theme-dark en <html> (toggle del usuario) */
 html.theme-dark {
   --color-background: #152a45;
-  --color-background-soft: #1B416E;
+  --color-background-soft: #1b416e;
   --color-background-mute: #1e3a5f;
 
   --color-border: rgba(234, 234, 237, 0.2);
@@ -137,12 +137,24 @@ button {
   direction: ltr;
   vertical-align: middle;
 }
-.material-symbols-rounded.size-18 { font-size: 18px; }
-.material-symbols-rounded.size-20 { font-size: 20px; }
-.material-symbols-rounded.size-24 { font-size: 24px; }
-.material-symbols-rounded.size-32 { font-size: 32px; }
-.material-symbols-rounded.size-40 { font-size: 40px; }
-.material-symbols-rounded.size-48 { font-size: 48px; }
+.material-symbols-rounded.size-18 {
+  font-size: 18px;
+}
+.material-symbols-rounded.size-20 {
+  font-size: 20px;
+}
+.material-symbols-rounded.size-24 {
+  font-size: 24px;
+}
+.material-symbols-rounded.size-32 {
+  font-size: 32px;
+}
+.material-symbols-rounded.size-40 {
+  font-size: 40px;
+}
+.material-symbols-rounded.size-48 {
+  font-size: 48px;
+}
 
 /* Selects: estilo acorde al resto de la app */
 select {
@@ -160,7 +172,9 @@ select {
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1.25rem;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 select:hover {
   border-color: var(--color-border-hover);
