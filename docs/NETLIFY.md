@@ -24,7 +24,7 @@ El proyecto incluye **`netlify.toml`** en la raíz:
 1. Subir el repositorio a Git (GitHub, GitLab o Bitbucket).
 2. En [Netlify](https://netlify.com): “Add new site” → “Import an existing project” y conectar el repo.
 3. Netlify detecta `netlify.toml`; no suele hacer falta configurar comando ni directorio a mano.
-4. (Opcional) Definir variables de entorno en Netlify (Site settings → Environment variables), por ejemplo `VITE_WHATSAPP_NUMBER`, para el build de producción.
+4. No hace falta definir variables de entorno para el número de WhatsApp: se configura en Admin → Sobre nosotros → «Teléfono para pedidos (WhatsApp)». Si está vacío, el botón del carrito queda deshabilitado.
 
 ## Capa gratuita
 

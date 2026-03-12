@@ -55,7 +55,7 @@ La persistencia es **solo en sesión**: al recargar la página se pierde todo. L
 1. Ver productos en `/`.
 2. Agregar al carrito (botón por producto).
 3. Ir a `/carrito`: ver resumen, elegir medio de pago y opción de envío.
-4. “Enviar pedido por WhatsApp”: se arma un texto con ítems, subtotal, envío, total y medio de pago; se abre `https://wa.me/{número}?text=...`. El número se configura con `VITE_WHATSAPP_NUMBER` (ver `.env.example`).
+4. “Enviar pedido por WhatsApp”: se arma un texto con ítems, subtotal, envío, total y medio de pago; se abre `https://wa.me/{número}?text=...`. El número se toma del store **aboutUs** (campo «Teléfono para pedidos (WhatsApp)» en Admin → Sobre nosotros). Si no hay número, el botón queda deshabilitado.
 
 ## Flujo admin
 
@@ -67,7 +67,7 @@ La persistencia es **solo en sesión**: al recargar la página se pierde todo. L
 
 ## Variables de entorno
 
-- **`VITE_WHATSAPP_NUMBER`**: Número de WhatsApp del negocio (código de país, sin `+`). Usado en `CarritoView.vue` para el enlace de WhatsApp. Copiar `.env.example` a `.env` y completar.
+- No se usa variable de entorno para el número de WhatsApp: se configura en Admin → Sobre nosotros → «Teléfono para pedidos (WhatsApp)». Si hace falta otra variable para el build, agregarla en `.env` (ver `.env.example`).
 
 ## Tema y paleta de colores
 

@@ -36,6 +36,9 @@ const selectedShipping = computed(() =>
 )
 const shippingCost = computed(() => selectedShipping.value?.costo ?? 0)
 const totalWithShipping = computed(() => total.value + shippingCost.value)
+const hasWhatsAppNumber = computed(() =>
+  /[0-9]/.test((aboutStore.data?.value?.telefono ?? '').toString().trim())
+)
 
 function textoWhatsApp() {
   const payment = paymentStore.items.find((o) => o.id === selectedPaymentId.value)
@@ -52,8 +55,9 @@ function textoWhatsApp() {
 }
 
 function openWhatsApp() {
-  const tel = aboutStore.data.telefono || import.meta.env.VITE_WHATSAPP_NUMBER || ''
-  const url = `https://wa.me/${tel.replace(/\D/g, '')}?text=${textoWhatsApp()}`
+  const tel = (aboutStore.data?.value?.telefono ?? '').toString().trim().replace(/\D/g, '')
+  if (!tel) return
+  const url = `https://wa.me/${tel}?text=${textoWhatsApp()}`
   window.open(url, '_blank')
 }
 </script>
@@ -120,9 +124,17 @@ function openWhatsApp() {
 
       <section class="total-final">
         <p><strong>Total: ${{ totalWithShipping }}</strong></p>
-        <button type="button" class="btn-whatsapp" @click="openWhatsApp">
+        <button
+          type="button"
+          class="btn-whatsapp"
+          :disabled="!hasWhatsAppNumber"
+          @click="openWhatsApp"
+        >
           Enviar pedido por WhatsApp
         </button>
+        <p v-if="!hasWhatsAppNumber" class="whatsapp-hint">
+          Para habilitar el enlace, configurá el teléfono en Admin → Sobre nosotros.
+        </p>
       </section>
     </template>
   </div>
@@ -214,6 +226,15 @@ section {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+}
+.btn-whatsapp:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.whatsapp-hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 .sin-opciones {
   color: var(--color-text-muted);

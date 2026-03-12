@@ -16,7 +16,7 @@ Sitio de pedidos para un negocio de pastas: catálogo, carrito, medios de pago y
 npm install
 ```
 
-Variables de entorno (opcional): copiar `.env.example` a `.env` y configurar `VITE_WHATSAPP_NUMBER` (número del negocio con código de país, sin `+`) para el botón de WhatsApp en el carrito.
+Variables de entorno (opcional): no es necesario configurar el número de WhatsApp en `.env`; se usa el teléfono cargado en Admin → Sobre nosotros. Si necesitás otras variables para el build, podés copiar `.env.example` a `.env`.
 
 ## Desarrollo
 
@@ -51,6 +51,7 @@ npm run format
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) — Estructura, rutas, stores y flujos.
 - [docs/NETLIFY.md](docs/NETLIFY.md) — Despliegue en Netlify.
 - [docs/NETLIFY-FORMS.md](docs/NETLIFY-FORMS.md) — Uso previsto de Netlify Forms y límites.
+- [docs/PASOS-DEPLOY-NETLIFY-FORMS.md](docs/PASOS-DEPLOY-NETLIFY-FORMS.md) — **Pasos para hacer deploy y conectar Netlify Forms** (guía en español).
 
 Mantener la documentación actualizada al cambiar el proyecto.
 
