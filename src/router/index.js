@@ -10,6 +10,11 @@ import AdminAbout from '@/views/admin/AdminAbout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, _from, savedPosition) {
+    if (to.name === 'carrito') return { top: 0 }
+    if (savedPosition) return savedPosition
+    return {}
+  },
   routes: [
     {
       path: '/',
