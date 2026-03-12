@@ -14,6 +14,7 @@ const shippingStore = useShippingOptionsStore()
 const aboutStore = useAboutUsStore()
 
 const { lines, total } = storeToRefs(cartStore)
+const { data: aboutData } = storeToRefs(aboutStore)
 
 const selectedPaymentId = ref(null)
 const selectedShippingId = ref(null)
@@ -39,9 +40,36 @@ const selectedShipping = computed(() =>
 )
 const shippingCost = computed(() => selectedShipping.value?.costo ?? 0)
 const totalWithShipping = computed(() => total.value + shippingCost.value)
-const hasWhatsAppNumber = computed(() =>
-  /[0-9]/.test((aboutStore.data?.value?.telefono ?? '').toString().trim())
+
+/** Teléfono con al menos 8 dígitos para considerar válido (reactivo al store) */
+const hasWhatsAppNumber = computed(() => {
+  const tel = (aboutData.value?.telefono ?? '').toString().trim()
+  const digits = tel.replace(/\D/g, '')
+  return digits.length >= 8
+})
+
+/** Validaciones para habilitar el botón WhatsApp */
+const canSendOrder = computed(() =>
+  lineItems.value.length > 0 &&
+  !!selectedPaymentId.value &&
+  !!selectedShippingId.value &&
+  !!nombreCliente.value?.trim() &&
+  !!direccionEntrega.value?.trim() &&
+  hasWhatsAppNumber.value
 )
+
+/** Mensajes de lo que falta (para tooltip al hover cuando el botón está deshabilitado) */
+const validationMessages = computed(() => {
+  const list = []
+  if (lineItems.value.length === 0) list.push('Agregá al menos un producto al carrito.')
+  if (!selectedPaymentId.value) list.push('Seleccioná un medio de pago.')
+  if (!selectedShippingId.value) list.push('Seleccioná un tipo de envío.')
+  if (!nombreCliente.value?.trim()) list.push('Completá tu nombre.')
+  if (!direccionEntrega.value?.trim()) list.push('Completá la dirección de entrega.')
+  if (!hasWhatsAppNumber.value) list.push('El teléfono para pedidos no está configurado (Admin → Sobre nosotros).')
+  return list
+})
+
 
 function textoWhatsApp() {
   const payment = paymentStore.items.find((o) => o.id === selectedPaymentId.value)
@@ -64,7 +92,7 @@ function textoWhatsApp() {
 }
 
 function openWhatsApp() {
-  const tel = (aboutStore.data?.value?.telefono ?? '').toString().trim().replace(/\D/g, '')
+  const tel = (aboutData.value?.telefono ?? '').toString().trim().replace(/\D/g, '')
   if (!tel) return
   const url = `https://wa.me/${tel}?text=${textoWhatsApp()}`
   window.open(url, '_blank')
@@ -149,14 +177,25 @@ function openWhatsApp() {
 
       <section class="total-final">
         <p><strong>Total: ${{ totalWithShipping }}</strong></p>
-        <button
-          type="button"
-          class="btn-whatsapp"
-          :disabled="!hasWhatsAppNumber"
-          @click="openWhatsApp"
-        >
-          Enviar pedido por WhatsApp
-        </button>
+        <div class="btn-whatsapp-wrap">
+          <button
+            type="button"
+            class="btn-whatsapp"
+            :disabled="!canSendOrder"
+            :title="!canSendOrder && validationMessages.length ? validationMessages.join(' ') : undefined"
+            @click="openWhatsApp"
+          >
+            Enviar pedido por WhatsApp
+          </button>
+          <Transition name="fade">
+            <p v-if="!canSendOrder && validationMessages.length > 0" class="validation-tooltip" role="status">
+              Para enviar el pedido falta:
+              <ul>
+                <li v-for="(msg, i) in validationMessages" :key="i">{{ msg }}</li>
+              </ul>
+            </p>
+          </Transition>
+        </div>
         <p v-if="!hasWhatsAppNumber" class="whatsapp-hint">
           Para habilitar el enlace, configurá el teléfono en Admin → Sobre nosotros.
         </p>
@@ -243,18 +282,56 @@ section {
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
 }
-.btn-whatsapp {
+.btn-whatsapp-wrap {
+  position: relative;
   margin-top: 0.5rem;
+}
+.btn-whatsapp {
+  display: block;
+  width: 100%;
   padding: 0.6rem 1rem;
   background: #25d366;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 1rem;
+}
+.btn-whatsapp:hover:not(:disabled) {
+  filter: brightness(1.05);
 }
 .btn-whatsapp:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+}
+.validation-tooltip {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-background-mute);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  list-style: none;
+}
+.validation-tooltip ul {
+  margin: 0.35rem 0 0 0;
+  padding-left: 1rem;
+  list-style: disc;
+}
+.validation-tooltip li {
+  margin-bottom: 0.2rem;
+}
+.validation-tooltip li:last-child {
+  margin-bottom: 0;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 .whatsapp-hint {
   margin-top: 0.5rem;
