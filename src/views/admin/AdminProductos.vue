@@ -7,7 +7,6 @@ import {
   apiProductsPost,
   apiProductsPatch,
   apiProductsDelete,
-  apiUploadProductImage,
   apiSectionsPost,
   apiSectionsDelete,
   apiReorderItems,
@@ -23,7 +22,6 @@ const form = ref({
 })
 const sectionForm = ref({ titulo: '', subtitulo: '' })
 const error = ref('')
-const uploading = ref(false)
 const editingProductId = ref(null)
 const editForm = ref({
   titulo: '',
@@ -31,15 +29,6 @@ const editForm = ref({
   costo: '',
   foto: '',
 })
-const uploadingEdit = ref(false)
-/** Preview de imagen antes de confirmar subida (formulario crear) */
-const pendingPreviewCreate = ref('')
-const pendingFileCreate = ref(null)
-const fileInputCreateRef = ref(null)
-/** Preview de imagen antes de confirmar subida (formulario editar) */
-const pendingPreviewEdit = ref('')
-const pendingFileEdit = ref(null)
-const fileInputEditRef = ref(null)
 
 /** Lista unificada para el drag (copia de orderedList del store); se reordena con vuedraggable */
 const orderedListRef = ref([])
@@ -62,89 +51,6 @@ function itemKey(item) {
   return `${item.type}-${item.id}`
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
-function onFilePickedCreate(e) {
-  const file = e.target?.files?.[0]
-  if (!file || !file.type.startsWith('image/')) return
-  pendingFileCreate.value = file
-  readFileAsDataUrl(file).then((dataUrl) => {
-    pendingPreviewCreate.value = dataUrl
-  })
-  e.target.value = ''
-}
-
-async function confirmUploadCreate() {
-  if (!pendingFileCreate.value) return
-  error.value = ''
-  uploading.value = true
-  try {
-    const dataUrl = await readFileAsDataUrl(pendingFileCreate.value)
-    const url = await apiUploadProductImage(dataUrl)
-    form.value.foto = url
-    clearPendingCreate()
-  } catch (err) {
-    error.value = err.message || 'Error al subir la imagen. ¿Netlify Blobs está disponible?'
-  } finally {
-    uploading.value = false
-  }
-}
-
-function clearPendingCreate() {
-  pendingPreviewCreate.value = ''
-  pendingFileCreate.value = null
-  if (fileInputCreateRef.value) fileInputCreateRef.value.value = ''
-}
-
-function clearPhotoCreate() {
-  form.value.foto = ''
-  clearPendingCreate()
-}
-
-function onFilePickedEdit(e) {
-  const file = e.target?.files?.[0]
-  if (!file || !file.type.startsWith('image/')) return
-  pendingFileEdit.value = file
-  readFileAsDataUrl(file).then((dataUrl) => {
-    pendingPreviewEdit.value = dataUrl
-  })
-  e.target.value = ''
-}
-
-async function confirmUploadEdit() {
-  if (!pendingFileEdit.value) return
-  error.value = ''
-  uploadingEdit.value = true
-  try {
-    const dataUrl = await readFileAsDataUrl(pendingFileEdit.value)
-    const url = await apiUploadProductImage(dataUrl)
-    editForm.value.foto = url
-    clearPendingEdit()
-  } catch (err) {
-    error.value = err.message || 'Error al subir la imagen.'
-  } finally {
-    uploadingEdit.value = false
-  }
-}
-
-function clearPendingEdit() {
-  pendingPreviewEdit.value = ''
-  pendingFileEdit.value = null
-  if (fileInputEditRef.value) fileInputEditRef.value.value = ''
-}
-
-function clearPhotoEdit() {
-  editForm.value.foto = ''
-  clearPendingEdit()
-}
-
 function startEdit(p) {
   editingProductId.value = p.id
   editForm.value = {
@@ -153,7 +59,6 @@ function startEdit(p) {
     costo: String(p.costo ?? ''),
     foto: p.foto ?? '',
   }
-  clearPendingEdit()
   error.value = ''
 }
 
@@ -199,7 +104,6 @@ async function submit() {
     const item = await apiProductsPost(payload)
     productsStore.add(item, item.id)
     form.value = { titulo: '', descripcion: '', costo: '', foto: '' }
-    clearPendingCreate()
   } catch (e) {
     error.value = e.message || 'Error al crear. ¿Está configurada la base de datos (Neon)?'
   }
@@ -300,70 +204,49 @@ async function remove(id) {
       <h3>Nueva sección</h3>
       <p class="hint">Agregá secciones para agrupar productos en la tienda. Arrastrá los ítems en el listado para cambiar el orden.</p>
       <form class="form-section-create" @submit.prevent="addSection">
-        <label>
-          Título de la sección
-          <input v-model="sectionForm.titulo" type="text" placeholder="Ej. Pastas rellenas" required />
-        </label>
-        <label>
-          Subtítulo (opcional)
-          <input v-model="sectionForm.subtitulo" type="text" placeholder="Ej. Con relleno de verdura o carne" />
-        </label>
-        <button type="submit">Crear sección</button>
+        <div class="form-section-fields">
+          <label>
+            Título de la sección
+            <input v-model="sectionForm.titulo" type="text" placeholder="Ej. Pastas rellenas" required />
+          </label>
+          <label>
+            Subtítulo (opcional)
+            <input v-model="sectionForm.subtitulo" type="text" placeholder="Ej. Con relleno de verdura o carne" />
+          </label>
+        </div>
+        <div class="form-section-actions">
+          <button type="submit">Crear sección</button>
+        </div>
       </form>
     </section>
 
     <section class="form-nuevo">
       <h3>Nuevo producto</h3>
-      <form @submit.prevent="submit">
-        <label>
-          Título
-          <input v-model="form.titulo" type="text" required />
-        </label>
-        <label>
-          Descripción
-          <textarea v-model="form.descripcion" rows="2" />
-        </label>
-        <label>
-          Costo ($)
-          <input v-model="form.costo" type="number" step="0.01" min="0" required />
-        </label>
-        <label>
-          URL de la foto
-          <input v-model="form.foto" type="url" placeholder="https://... o elegir archivo abajo" />
-        </label>
-        <div class="photo-upload-block">
-          <input
-            ref="fileInputCreateRef"
-            id="photo-create"
-            type="file"
-            accept="image/*"
-            class="input-file-hidden"
-            :disabled="uploading"
-            @change="onFilePickedCreate"
-          />
-          <label for="photo-create" class="label-file">Elegir imagen desde el dispositivo</label>
-          <div v-if="pendingPreviewCreate || form.foto" class="photo-preview-area">
-            <img
-              :src="pendingPreviewCreate || form.foto"
-              alt="Vista previa"
-              class="photo-preview-img"
-            />
-            <div class="photo-preview-actions">
-              <template v-if="pendingPreviewCreate">
-                <button type="button" class="btn-small" :disabled="uploading" @click="confirmUploadCreate">
-                  {{ uploading ? 'Subiendo…' : 'Confirmar subida' }}
-                </button>
-                <button type="button" class="btn-small" :disabled="uploading" @click="clearPendingCreate">Quitar</button>
-              </template>
-              <template v-else>
-                <button type="button" class="btn-small" @click="clearPhotoCreate">Quitar imagen</button>
-              </template>
-            </div>
-          </div>
+      <form class="form-nuevo-producto" @submit.prevent="submit">
+        <div class="form-nuevo-fields">
+          <label>
+            Título
+            <input v-model="form.titulo" type="text" required />
+          </label>
+          <label>
+            Descripción
+            <textarea v-model="form.descripcion" rows="2" />
+          </label>
+          <label>
+            Costo ($)
+            <input v-model="form.costo" type="number" step="0.01" min="0" required />
+          </label>
+          <label>
+            URL de la foto
+            <input v-model="form.foto" type="url" placeholder="https://..." />
+          </label>
         </div>
-        <button type="submit">Crear producto</button>
+        <div class="form-nuevo-actions">
+          <button type="submit">Crear producto</button>
+        </div>
       </form>
       <p v-if="error" class="form-error">{{ error }}</p>
+      <p class="netlify-hint">Ingresá la URL de la imagen del producto. Los productos se guardan en Neon.</p>
     </section>
 
     <section class="lista">
@@ -395,34 +278,18 @@ async function remove(id) {
                 </button>
               </div>
             </div>
-            <div v-else-if="editingProductId === element.id" class="list-item product-edit-row">
+            <div v-else-if="editingProductId === element.id" class="list-item list-item-editing product-edit-row">
               <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
               <form class="edit-form" @submit.prevent="submitEdit">
                 <div class="edit-fields">
                   <label>Título <input v-model="editForm.titulo" type="text" required /></label>
                   <label>Descripción <textarea v-model="editForm.descripcion" rows="2" /></label>
                   <label>Costo ($) <input v-model="editForm.costo" type="number" step="0.01" min="0" required /></label>
-                  <label>URL foto <input v-model="editForm.foto" type="url" placeholder="URL o elegir archivo" /></label>
-                  <div class="photo-upload-block">
-                    <input ref="fileInputEditRef" id="photo-edit" type="file" accept="image/*" class="input-file-hidden" :disabled="uploadingEdit" @change="onFilePickedEdit" />
-                    <label for="photo-edit" class="label-file">Elegir imagen</label>
-                    <div v-if="pendingPreviewEdit || editForm.foto" class="photo-preview-area">
-                      <img :src="pendingPreviewEdit || editForm.foto" alt="Vista previa" class="photo-preview-img" />
-                      <div class="photo-preview-actions">
-                        <template v-if="pendingPreviewEdit">
-                          <button type="button" class="btn-small" :disabled="uploadingEdit" @click="confirmUploadEdit">{{ uploadingEdit ? 'Subiendo…' : 'Confirmar subida' }}</button>
-                          <button type="button" class="btn-small" :disabled="uploadingEdit" @click="clearPendingEdit">Quitar</button>
-                        </template>
-                        <template v-else>
-                          <button type="button" class="btn-small" @click="clearPhotoEdit">Quitar imagen</button>
-                        </template>
-                      </div>
-                    </div>
-                  </div>
+                  <label>URL de la foto <input v-model="editForm.foto" type="url" placeholder="https://..." /></label>
                 </div>
                 <div class="edit-actions">
-                  <button type="submit" class="btn-small">Guardar</button>
                   <button type="button" class="btn-small" @click="cancelEdit">Cancelar</button>
+                  <button type="submit" class="btn-small">Guardar</button>
                 </div>
               </form>
             </div>
@@ -470,24 +337,56 @@ async function remove(id) {
   padding: 1.25rem 1.5rem;
   background: var(--color-background-soft);
   border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .form-nuevo h3 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
-.form-nuevo button[type="submit"] {
-  margin-top: 0.25rem;
+.form-nuevo-producto {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1rem;
+}
+.form-nuevo-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1.25rem;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .form-nuevo-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.form-nuevo-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+}
+.form-nuevo-fields input,
+.form-nuevo-fields textarea {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+.form-nuevo-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.form-nuevo-actions button[type="submit"] {
+  padding: 0.45rem 1rem;
 }
 .form-error {
   margin-top: 0.5rem;
   font-size: 0.9rem;
   color: var(--color-accent);
-}
-.uploading-hint {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  margin-left: 0.5rem;
 }
 .netlify-hint {
   font-size: 0.85rem;
@@ -512,6 +411,10 @@ async function remove(id) {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-background);
+}
+.list-item-editing {
+  background: var(--color-background-soft);
+  padding: 1rem 0.75rem;
 }
 .drag-handle {
   cursor: grab;
@@ -651,69 +554,41 @@ async function remove(id) {
 .form-section-create {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
-.form-section-create label {
+.form-section-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1.25rem;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .form-section-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.form-section-fields label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
-.form-section-create input {
-  min-width: 220px;
+.form-section-fields input {
+  width: 100%;
+  min-width: 0;
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
   border: 1px solid var(--color-border);
+  box-sizing: border-box;
 }
-.input-file-hidden {
-  position: absolute;
-  width: 0.1px;
-  height: 0.1px;
-  opacity: 0;
-  overflow: hidden;
-  z-index: -1;
-}
-.label-file {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  border: 1px dashed var(--color-border);
-  border-radius: 8px;
-  background: var(--color-background-mute);
-  transition: border-color 0.2s, background 0.2s;
-}
-.label-file:hover {
-  border-color: var(--color-accent);
-  background: rgba(192, 47, 54, 0.08);
-}
-.photo-upload-block {
+.form-section-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  justify-content: flex-end;
 }
-.photo-preview-area {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-}
-.photo-preview-img {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-}
-.photo-preview-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
+.form-section-actions button[type="submit"] {
+  padding: 0.45rem 1rem;
 }
 .product-group {
   margin-bottom: 1.5rem;
@@ -735,37 +610,50 @@ async function remove(id) {
   min-width: 2rem;
 }
 .product-edit-row {
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: none;
 }
-.edit-form {
+.product-edit-row .edit-form {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 1rem;
 }
 .edit-fields {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 0.75rem 1.25rem;
-  flex: 1;
-  min-width: 200px;
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .edit-fields {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 .edit-fields label {
   display: flex;
   flex-direction: column;
   font-size: 0.9rem;
-  gap: 0.2rem;
+  gap: 0.25rem;
+  min-width: 0;
 }
 .edit-fields input,
-.edit-fields select,
 .edit-fields textarea {
-  padding: 0.35rem 0.5rem;
-  min-width: 140px;
+  width: 100%;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
 }
 .edit-actions {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 </style>
