@@ -9,3 +9,4 @@ Documentación del proyecto. **Mantenerla actualizada** cuando se modifiquen flu
 - [Despliegue en Netlify](./NETLIFY.md)
 - [Netlify Forms y límites](./NETLIFY-FORMS.md)
 - [**Pasos deploy y conectar Forms**](./PASOS-DEPLOY-NETLIFY-FORMS.md) — guía paso a paso en español
+- [**Base de datos Neon**](./NEON-SETUP.md) — usar Neon (PostgreSQL) en lugar de Forms para el panel de administración

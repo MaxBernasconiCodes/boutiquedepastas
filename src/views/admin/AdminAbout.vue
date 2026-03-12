@@ -1,16 +1,15 @@
 <script setup>
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAboutUsStore } from '@/stores/aboutUs'
+import { apiAboutPut } from '@/api/admin'
 
 const aboutStore = useAboutUsStore()
 const { data } = storeToRefs(aboutStore)
+const error = ref('')
 
-/**
- * Guardar cambios: reemplaza la instancia actual por una nueva con los datos del formulario.
- * Con Netlify Forms sería "enviar form" = nueva entrega.
- */
-function guardar() {
-  aboutStore.replaceWith({
+async function guardar() {
+  const payload = {
     titulo: data.value.titulo,
     descripcion: data.value.descripcion,
     foto: data.value.foto,
@@ -20,14 +19,22 @@ function guardar() {
       instagram: (data.value.redes?.instagram ?? '').trim(),
       facebook: (data.value.redes?.facebook ?? '').trim(),
     },
-  })
+  }
+  error.value = ''
+  try {
+    const result = await apiAboutPut(payload)
+    aboutStore.replaceWith(result)
+  } catch (e) {
+    error.value = e.message || 'Error al guardar. ¿Está configurada la base de datos (Neon)?'
+  }
 }
 </script>
 
 <template>
   <div class="admin-about">
     <h2>Sobre nosotros</h2>
-    <p class="hint">Estos datos se muestran en la página "Sobre nosotros", a la que se llega al hacer clic en el logo del menú. El teléfono se usa también para el enlace de WhatsApp del carrito. Cada "Guardar cambios" reemplaza la versión anterior (con Netlify Forms sería un nuevo envío del form).</p>
+    <p class="hint">Estos datos se muestran en la página "Sobre nosotros", a la que se llega al hacer clic en el logo del menú. El teléfono se usa también para el enlace de WhatsApp del carrito.</p>
+    <p v-if="error" class="form-error">{{ error }}</p>
 
     <section class="admin-form-card">
     <form @submit.prevent="guardar" class="form-block">
@@ -110,5 +117,10 @@ function guardar() {
 .red-label {
   font-weight: 500;
   font-size: 0.95rem;
+}
+.form-error {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
 }
 </style>

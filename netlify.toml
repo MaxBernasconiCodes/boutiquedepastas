@@ -1,8 +1,16 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
-# SPA: todas las rutas sirven index.html
+# API: no redirigir las Netlify Functions
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# SPA: el resto de rutas sirven index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"

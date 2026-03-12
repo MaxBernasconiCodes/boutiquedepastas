@@ -1,6 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useProductsStore } from '@/stores/products'
+import {
+  apiProductsPost,
+  apiProductsPatch,
+  apiProductsDelete,
+} from '@/api/admin'
 
 const productsStore = useProductsStore()
 const form = ref({
@@ -9,29 +14,55 @@ const form = ref({
   costo: '',
   foto: '',
 })
+const error = ref('')
 
-function submit() {
+async function submit() {
   const costo = Number(form.value.costo)
   if (!form.value.titulo || Number.isNaN(costo)) return
-  productsStore.add({
-    titulo: form.value.titulo.trim(),
-    descripcion: form.value.descripcion.trim(),
-    costo,
-    foto: form.value.foto.trim() || undefined,
-  })
-  form.value = { titulo: '', descripcion: '', costo: '', foto: '' }
+  error.value = ''
+  try {
+    const item = await apiProductsPost({
+      titulo: form.value.titulo.trim(),
+      descripcion: form.value.descripcion.trim(),
+      costo,
+      foto: form.value.foto.trim() || undefined,
+    })
+    productsStore.add(item, item.id)
+    form.value = { titulo: '', descripcion: '', costo: '', foto: '' }
+  } catch (e) {
+    error.value = e.message || 'Error al crear. ¿Está configurada la base de datos (Neon)?'
+  }
 }
 
-function archive(id) {
-  productsStore.setArchived(id, true)
+async function archive(id) {
+  error.value = ''
+  try {
+    await apiProductsPatch(id, { archivado: true })
+    productsStore.setArchived(id, true)
+  } catch (e) {
+    error.value = e.message || 'Error al archivar.'
+  }
 }
 
-function unarchive(id) {
-  productsStore.setArchived(id, false)
+async function unarchive(id) {
+  error.value = ''
+  try {
+    await apiProductsPatch(id, { archivado: false })
+    productsStore.setArchived(id, false)
+  } catch (e) {
+    error.value = e.message || 'Error al desarchivar.'
+  }
 }
 
-function remove(id) {
-  if (confirm('¿Eliminar este producto?')) productsStore.remove(id)
+async function remove(id) {
+  if (!confirm('¿Eliminar este producto?')) return
+  error.value = ''
+  try {
+    await apiProductsDelete(id)
+    productsStore.remove(id)
+  } catch (e) {
+    error.value = e.message || 'Error al eliminar.'
+  }
 }
 </script>
 
@@ -60,8 +91,9 @@ function remove(id) {
         </label>
         <button type="submit">Crear producto</button>
       </form>
+      <p v-if="error" class="form-error">{{ error }}</p>
       <p class="netlify-hint">
-        Los productos se guardan en sesión. Para persistir en Netlify se usarán Forms (límite plan gratuito).
+        Los productos se guardan en la base de datos Neon. Si no está configurada, los datos solo se mantienen en sesión.
       </p>
     </section>
 
@@ -117,6 +149,11 @@ function remove(id) {
 }
 .form-nuevo button[type="submit"] {
   margin-top: 0.25rem;
+}
+.form-error {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-accent);
 }
 .netlify-hint {
   font-size: 0.85rem;

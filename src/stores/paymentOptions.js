@@ -8,9 +8,9 @@ import { ref } from 'vue'
 export const usePaymentOptionsStore = defineStore('paymentOptions', () => {
   const items = ref([])
 
-  function add(option) {
-    const id = String(Date.now())
-    items.value.push({ ...option, id })
+  function add(option, id) {
+    const newId = id ?? String(Date.now())
+    items.value.push({ ...option, id: newId })
   }
 
   function update(id, data) {

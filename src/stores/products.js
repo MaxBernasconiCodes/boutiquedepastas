@@ -10,9 +10,9 @@ export const useProductsStore = defineStore('products', () => {
 
   const activos = computed(() => items.value.filter((p) => !p.archivado))
 
-  function add(product) {
-    const id = String(Date.now())
-    items.value.push({ ...product, id, archivado: false })
+  function add(product, id) {
+    const newId = id ?? String(Date.now())
+    items.value.push({ ...product, id: newId, archivado: product.archivado ?? false })
   }
 
   function update(id, data) {

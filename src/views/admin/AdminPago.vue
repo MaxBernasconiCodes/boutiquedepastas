@@ -1,22 +1,36 @@
 <script setup>
 import { ref } from 'vue'
 import { usePaymentOptionsStore } from '@/stores/paymentOptions'
+import { apiPaymentOptionsPost, apiPaymentOptionsDelete } from '@/api/admin'
 
 const paymentStore = usePaymentOptionsStore()
 const form = ref({ nombre: '', descripcion: '' })
+const error = ref('')
 
-function add() {
+async function add() {
   const nombre = form.value.nombre.trim()
   if (!nombre) return
-  paymentStore.add({
-    nombre,
-    descripcion: form.value.descripcion.trim() || undefined,
-  })
-  form.value = { nombre: '', descripcion: '' }
+  error.value = ''
+  try {
+    const item = await apiPaymentOptionsPost({
+      nombre,
+      descripcion: form.value.descripcion.trim() || undefined,
+    })
+    paymentStore.add(item, item.id)
+    form.value = { nombre: '', descripcion: '' }
+  } catch (e) {
+    error.value = e.message || 'Error al agregar.'
+  }
 }
 
-function remove(id) {
-  paymentStore.remove(id)
+async function remove(id) {
+  error.value = ''
+  try {
+    await apiPaymentOptionsDelete(id)
+    paymentStore.remove(id)
+  } catch (e) {
+    error.value = e.message || 'Error al eliminar.'
+  }
 }
 </script>
 
@@ -24,6 +38,7 @@ function remove(id) {
   <div class="admin-pago">
     <h2>Opciones de pago</h2>
     <p class="hint">Nombre y opcionalmente descripción. La descripción se muestra en el carrito debajo de la opción elegida.</p>
+    <p v-if="error" class="form-error">{{ error }}</p>
 
     <section class="admin-form-card">
       <form @submit.prevent="add" class="form-block">
@@ -99,6 +114,11 @@ function remove(id) {
   color: #c00;
   border-radius: 4px;
   background: transparent;
+}
+.form-error {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
 }
 .empty {
   color: var(--color-text-muted);

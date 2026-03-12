@@ -1,24 +1,38 @@
 <script setup>
 import { ref } from 'vue'
 import { useShippingOptionsStore } from '@/stores/shippingOptions'
+import { apiShippingOptionsPost, apiShippingOptionsDelete } from '@/api/admin'
 
 const shippingStore = useShippingOptionsStore()
 const form = ref({ nombre: '', costo: '', descripcion: '' })
+const error = ref('')
 
-function add() {
+async function add() {
   const nombre = form.value.nombre.trim()
   const costo = Number(form.value.costo)
   if (!nombre || Number.isNaN(costo)) return
-  shippingStore.add({
-    nombre,
-    costo,
-    descripcion: form.value.descripcion.trim() || undefined,
-  })
-  form.value = { nombre: '', costo: '', descripcion: '' }
+  error.value = ''
+  try {
+    const item = await apiShippingOptionsPost({
+      nombre,
+      costo,
+      descripcion: form.value.descripcion.trim() || undefined,
+    })
+    shippingStore.add(item, item.id)
+    form.value = { nombre: '', costo: '', descripcion: '' }
+  } catch (e) {
+    error.value = e.message || 'Error al agregar.'
+  }
 }
 
-function remove(id) {
-  shippingStore.remove(id)
+async function remove(id) {
+  error.value = ''
+  try {
+    await apiShippingOptionsDelete(id)
+    shippingStore.remove(id)
+  } catch (e) {
+    error.value = e.message || 'Error al eliminar.'
+  }
 }
 </script>
 
@@ -26,6 +40,7 @@ function remove(id) {
   <div class="admin-envio">
     <h2>Opciones de envío</h2>
     <p class="hint">Nombre, costo y opcionalmente descripción. La descripción se muestra en el carrito debajo de la opción elegida.</p>
+    <p v-if="error" class="form-error">{{ error }}</p>
 
     <section class="admin-form-card">
       <form @submit.prevent="add" class="form-block">
@@ -126,6 +141,11 @@ function remove(id) {
   color: #c00;
   border-radius: 4px;
   background: transparent;
+}
+.form-error {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
 }
 .empty {
   color: var(--color-text-muted);
