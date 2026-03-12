@@ -6,7 +6,7 @@ import { useCartStore } from '@/stores/cart'
 
 const productsStore = useProductsStore()
 const cartStore = useCartStore()
-const { activos } = storeToRefs(productsStore)
+const { activosPorSeccion } = storeToRefs(productsStore)
 const { lines } = storeToRefs(cartStore)
 
 const cantidadPorProducto = computed(() => {
@@ -39,50 +39,55 @@ function sumar(productId) {
 <template>
   <div class="tienda">
     <h1>Nuestras Comidas</h1>
-    <div v-if="activos.length === 0" class="empty">
-      No hay productos disponibles.
-    </div>
-    <ul class="product-list">
-      <li v-for="p in activos" :key="p.id" class="product-card">
-        <div class="product-image-wrap">
-          <img v-if="p.foto" :src="p.foto" :alt="p.titulo" class="product-image" />
-          <span v-else class="no-image">Sin imagen</span>
-        </div>
-        <div class="product-info">
-          <h2 class="product-titulo">{{ p.titulo }}</h2>
-          <p class="product-desc">{{ p.descripcion }}</p>
-          <p class="product-precio">$ {{ p.costo }}</p>
-          <div class="product-actions">
-            <template v-if="cantidadEnCarrito(p.id) === 0">
-              <button type="button" class="btn-add" @click="agregar(p.id)">
-                Agregar al carrito
-              </button>
-            </template>
-            <template v-else>
-              <div class="cantidad-controls">
-                <button
-                  type="button"
-                  class="btn-qty"
-                  aria-label="Quitar uno"
-                  @click="restar(p.id)"
-                >
-                  <span class="material-symbols-rounded">remove</span>
-                </button>
-                <span class="cantidad-numero">{{ cantidadEnCarrito(p.id) }}</span>
-                <button
-                  type="button"
-                  class="btn-qty"
-                  aria-label="Agregar uno"
-                  @click="sumar(p.id)"
-                >
-                  <span class="material-symbols-rounded">add</span>
-                </button>
+    <template v-if="activosPorSeccion.length === 0">
+      <div class="empty">No hay productos disponibles.</div>
+    </template>
+    <template v-else>
+      <section v-for="group in activosPorSeccion" :key="group.section?.id ?? 'sin-seccion'" class="product-section">
+        <h2 v-if="group.section" class="section-title">{{ group.section.titulo }}</h2>
+        <ul class="product-list">
+          <li v-for="p in group.products" :key="p.id" class="product-card">
+            <div class="product-image-wrap">
+              <img v-if="p.foto" :src="p.foto" :alt="p.titulo" class="product-image" />
+              <span v-else class="no-image">Sin imagen</span>
+            </div>
+            <div class="product-info">
+              <h2 class="product-titulo">{{ p.titulo }}</h2>
+              <p class="product-desc">{{ p.descripcion }}</p>
+              <p class="product-precio">$ {{ p.costo }}</p>
+              <div class="product-actions">
+                <template v-if="cantidadEnCarrito(p.id) === 0">
+                  <button type="button" class="btn-add" @click="agregar(p.id)">
+                    Agregar al carrito
+                  </button>
+                </template>
+                <template v-else>
+                  <div class="cantidad-controls">
+                    <button
+                      type="button"
+                      class="btn-qty"
+                      aria-label="Quitar uno"
+                      @click="restar(p.id)"
+                    >
+                      <span class="material-symbols-rounded">remove</span>
+                    </button>
+                    <span class="cantidad-numero">{{ cantidadEnCarrito(p.id) }}</span>
+                    <button
+                      type="button"
+                      class="btn-qty"
+                      aria-label="Agregar uno"
+                      @click="sumar(p.id)"
+                    >
+                      <span class="material-symbols-rounded">add</span>
+                    </button>
+                  </div>
+                </template>
               </div>
-            </template>
-          </div>
-        </div>
-      </li>
-    </ul>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </template>
   </div>
 </template>
 
@@ -97,6 +102,20 @@ h1 {
 }
 .empty {
   color: var(--color-text-muted);
+}
+.product-section {
+  margin-bottom: 2rem;
+}
+.product-section:last-child {
+  margin-bottom: 0;
+}
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  color: var(--color-heading);
+  margin: 0 0 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--color-border);
 }
 .product-list {
   list-style: none;

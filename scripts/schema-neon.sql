@@ -1,5 +1,12 @@
 -- Ejecutar en Neon SQL Editor (Console → tu proyecto → SQL Editor).
--- Crea las tablas para productos, opciones de pago, opciones de envío y "Sobre nosotros".
+-- Crea las tablas para productos, secciones, opciones de pago, opciones de envío y "Sobre nosotros".
+
+-- Secciones: títulos que agrupan productos (ej. "Pastas rellenas", "Pastas secas")
+CREATE TABLE IF NOT EXISTS sections (
+  id TEXT PRIMARY KEY,
+  titulo TEXT NOT NULL,
+  orden INTEGER NOT NULL DEFAULT 0
+);
 
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
@@ -8,8 +15,13 @@ CREATE TABLE IF NOT EXISTS products (
   costo NUMERIC(10,2) NOT NULL DEFAULT 0,
   foto TEXT,
   archivado BOOLEAN NOT NULL DEFAULT false,
+  seccion_id TEXT REFERENCES sections(id) ON DELETE SET NULL,
+  orden INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_sections_orden ON sections(orden);
+CREATE INDEX IF NOT EXISTS idx_products_seccion_orden ON products(seccion_id, orden);
 
 CREATE TABLE IF NOT EXISTS payment_options (
   id TEXT PRIMARY KEY,

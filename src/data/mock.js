@@ -4,7 +4,7 @@
  * No usar en producción con datos reales; al deployar se reemplazará por Forms.
  */
 
-/** @type {Array<{ id: string, titulo: string, descripcion: string, costo: number, foto?: string, archivado?: boolean }>} */
+/** @type {Array<{ id: string, titulo: string, descripcion: string, costo: number, foto?: string, archivado?: boolean, seccion_id?: string, orden?: number }>} */
 export const mockProductos = [
   {
     id: 'mock-1',
