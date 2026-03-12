@@ -10,37 +10,28 @@ export const useProductsStore = defineStore('products', () => {
 
   const activos = computed(() => items.value.filter((p) => !p.archivado))
 
-  /** Productos activos agrupados por sección (orden de sección, luego orden de producto). */
+  const sectionsStore = useSectionsStore()
+
+  /** Lista unificada ordenada: secciones y productos con type 'section'|'product', orden global. */
+  const orderedList = computed(() => {
+    const sec = sectionsStore.items.map((s) => ({ ...s, type: 'section' }))
+    const pro = items.value.map((p) => ({ ...p, type: 'product' }))
+    return [...sec, ...pro].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+  })
+
+  /** Productos activos agrupados por sección según el orden de la lista (sección = cabecera, producto = bajo la última sección). */
   const activosPorSeccion = computed(() => {
-    const seccionesMap = new Map() // id sección -> { section, products: [] }
-    const sinSeccion = { section: null, products: [] }
-    const activosList = activos.value
-    for (const p of activosList) {
-      const sid = p.seccion_id || null
-      if (!sid) {
-        sinSeccion.products.push(p)
-        continue
-      }
-      if (!seccionesMap.has(sid)) {
-        seccionesMap.set(sid, { sectionId: sid, products: [] })
-      }
-      seccionesMap.get(sid).products.push(p)
-    }
-    const sectionsStore = useSectionsStore()
-    const seccionesOrdenadas = [...sectionsStore.items].sort((a, b) => a.orden - b.orden)
     const result = []
-    for (const sec of seccionesOrdenadas) {
-      const block = seccionesMap.get(sec.id)
-      if (block) {
-        block.section = sec
-        block.products.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-        result.push(block)
+    let current = { section: null, sectionId: null, products: [] }
+    for (const item of orderedList.value) {
+      if (item.type === 'section') {
+        if (current.products.length > 0 || current.section) result.push(current)
+        current = { section: item, sectionId: item.id, products: [] }
+      } else if (item.type === 'product' && !item.archivado) {
+        current.products.push(item)
       }
     }
-    if (sinSeccion.products.length) {
-      sinSeccion.products.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-      result.push({ section: null, sectionId: null, products: sinSeccion.products })
-    }
+    if (current.products.length > 0 || current.section) result.push(current)
     return result
   })
 
@@ -92,6 +83,7 @@ export const useProductsStore = defineStore('products', () => {
   return {
     items,
     activos,
+    orderedList,
     activosPorSeccion,
     add,
     update,

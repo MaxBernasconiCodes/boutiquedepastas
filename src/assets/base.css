@@ -16,6 +16,15 @@
   font-display: swap;
 }
 
+/* Fuente para subtítulos de sección (Adelia) */
+@font-face {
+  font-family: 'Adelia';
+  src: url('/fonts/adelia.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tema Boutique de pastas - paleta definida desde la imagen */
 :root {
   /* Colores base */
@@ -44,6 +53,7 @@
   --section-gap: 160px;
   --font-heading: 'Mirobrew OneD', serif;
   --font-vactory: 'Vactory Sans', sans-serif;
+  --font-subtitle: 'Adelia', cursive;
 
   /* Reserva de espacio para barras fijas en mobile (padding del contenido) */
   --mobile-top-bar-height: calc(52px + max(0.5rem, env(safe-area-inset-top, 0px)));
@@ -133,3 +143,33 @@ button {
 .material-symbols-rounded.size-32 { font-size: 32px; }
 .material-symbols-rounded.size-40 { font-size: 40px; }
 .material-symbols-rounded.size-48 { font-size: 48px; }
+
+/* Selects: estilo acorde al resto de la app */
+select {
+  font-family: var(--font-vactory);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  min-height: 40px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231B416E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.25rem;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+select:hover {
+  border-color: var(--color-border-hover);
+}
+select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(192, 47, 54, 0.2);
+}
+html.theme-dark select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23F6F4F0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}

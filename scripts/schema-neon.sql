@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS sections (
   id TEXT PRIMARY KEY,
   titulo TEXT NOT NULL,
+  subtitulo TEXT DEFAULT '',
   orden INTEGER NOT NULL DEFAULT 0
 );
 

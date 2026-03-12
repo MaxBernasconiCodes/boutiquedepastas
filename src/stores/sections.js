@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 /**
- * Sección: { id, titulo, orden }
- * Agrupa productos en la tienda con un título.
+ * Sección: { id, titulo, subtitulo?, orden }
+ * Agrupa productos en la tienda con un título (y opcional subtítulo).
  */
 export const useSectionsStore = defineStore('sections', () => {
   const items = ref([])
@@ -35,6 +35,7 @@ export const useSectionsStore = defineStore('sections', () => {
   function loadMock(data) {
     items.value = (data || []).map((s) => ({
       ...s,
+      subtitulo: s.subtitulo ?? '',
       orden: s.orden ?? 0,
     }))
   }

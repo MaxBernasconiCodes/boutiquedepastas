@@ -44,7 +44,10 @@ function sumar(productId) {
     </template>
     <template v-else>
       <section v-for="group in activosPorSeccion" :key="group.section?.id ?? 'sin-seccion'" class="product-section">
-        <h2 v-if="group.section" class="section-title">{{ group.section.titulo }}</h2>
+        <div v-if="group.section" class="section-header">
+          <h2 class="section-title">{{ group.section.titulo }}</h2>
+          <p v-if="group.section.subtitulo" class="section-subtitle">{{ group.section.subtitulo }}</p>
+        </div>
         <ul class="product-list">
           <li v-for="p in group.products" :key="p.id" class="product-card">
             <div class="product-image-wrap">
@@ -109,13 +112,23 @@ h1 {
 .product-section:last-child {
   margin-bottom: 0;
 }
+.section-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--color-border);
+}
 .section-title {
   font-family: var(--font-heading);
   font-size: 1.35rem;
   color: var(--color-heading);
-  margin: 0 0 1rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid var(--color-border);
+  margin: 0 0 0.25rem;
+}
+.section-subtitle {
+  font-family: var(--font-subtitle);
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
 }
 .product-list {
   list-style: none;

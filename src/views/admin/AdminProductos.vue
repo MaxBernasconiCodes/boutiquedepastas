@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import draggable from 'vuedraggable'
 import { useProductsStore } from '@/stores/products'
 import { useSectionsStore } from '@/stores/sections'
 import {
@@ -7,10 +8,10 @@ import {
   apiProductsPatch,
   apiProductsDelete,
   apiUploadProductImage,
-  apiSectionsGet,
   apiSectionsPost,
   apiSectionsPatch,
   apiSectionsDelete,
+  apiReorderItems,
 } from '@/api/admin'
 
 const productsStore = useProductsStore()
@@ -20,10 +21,8 @@ const form = ref({
   descripcion: '',
   costo: '',
   foto: '',
-  seccion_id: '',
-  orden: 0,
 })
-const sectionForm = ref({ titulo: '' })
+const sectionForm = ref({ titulo: '', subtitulo: '' })
 const error = ref('')
 const uploading = ref(false)
 const editingProductId = ref(null)
@@ -32,38 +31,37 @@ const editForm = ref({
   descripcion: '',
   costo: '',
   foto: '',
-  seccion_id: '',
-  orden: 0,
 })
 const uploadingEdit = ref(false)
+/** Preview de imagen antes de confirmar subida (formulario crear) */
+const pendingPreviewCreate = ref('')
+const pendingFileCreate = ref(null)
+const fileInputCreateRef = ref(null)
+/** Preview de imagen antes de confirmar subida (formulario editar) */
+const pendingPreviewEdit = ref('')
+const pendingFileEdit = ref(null)
+const fileInputEditRef = ref(null)
 
-/** Productos agrupados por sección (para listar y reordenar) */
-const itemsPorSeccion = computed(() => {
-  const map = new Map()
-  const sinSeccion = { section: null, products: [] }
-  for (const p of productsStore.items) {
-    const sid = p.seccion_id || null
-    if (!sid) {
-      sinSeccion.products.push(p)
-      continue
-    }
-    if (!map.has(sid)) map.set(sid, { sectionId: sid, products: [] })
-    map.get(sid).products.push(p)
-  }
-  const result = []
-  const seccionesOrdenadas = [...sectionsStore.items].sort((a, b) => a.orden - b.orden)
-  for (const sec of seccionesOrdenadas) {
-    const block = map.get(sec.id)
-    if (block) {
-      block.section = sec
-      block.products.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-      result.push(block)
-    }
-  }
-  sinSeccion.products.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-  result.push({ section: null, sectionId: null, products: sinSeccion.products })
-  return result
-})
+/** Lista unificada para el drag (copia de orderedList del store); se reordena con vuedraggable */
+const orderedListRef = ref([])
+const dragging = ref(false)
+watch(
+  () => productsStore.orderedList,
+  (val) => {
+    if (!dragging.value) orderedListRef.value = val.map((i) => ({ ...i }))
+  },
+  { immediate: true }
+)
+
+function getNextGlobalOrden() {
+  const s = Math.max(-1, ...sectionsStore.items.map((x) => x.orden ?? 0))
+  const p = Math.max(-1, ...productsStore.items.map((x) => x.orden ?? 0))
+  return Math.max(s, p) + 1
+}
+
+function itemKey(item) {
+  return `${item.type}-${item.id}`
+}
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -74,38 +72,78 @@ function readFileAsDataUrl(file) {
   })
 }
 
-async function onFileChange(e) {
+function onFilePickedCreate(e) {
   const file = e.target?.files?.[0]
   if (!file || !file.type.startsWith('image/')) return
+  pendingFileCreate.value = file
+  readFileAsDataUrl(file).then((dataUrl) => {
+    pendingPreviewCreate.value = dataUrl
+  })
+  e.target.value = ''
+}
+
+async function confirmUploadCreate() {
+  if (!pendingFileCreate.value) return
   error.value = ''
   uploading.value = true
   try {
-    const dataUrl = await readFileAsDataUrl(file)
+    const dataUrl = await readFileAsDataUrl(pendingFileCreate.value)
     const url = await apiUploadProductImage(dataUrl)
     form.value.foto = url
+    clearPendingCreate()
   } catch (err) {
     error.value = err.message || 'Error al subir la imagen. ¿Netlify Blobs está disponible?'
   } finally {
     uploading.value = false
-    e.target.value = ''
   }
 }
 
-async function onFileChangeEdit(e) {
+function clearPendingCreate() {
+  pendingPreviewCreate.value = ''
+  pendingFileCreate.value = null
+  if (fileInputCreateRef.value) fileInputCreateRef.value.value = ''
+}
+
+function clearPhotoCreate() {
+  form.value.foto = ''
+  clearPendingCreate()
+}
+
+function onFilePickedEdit(e) {
   const file = e.target?.files?.[0]
   if (!file || !file.type.startsWith('image/')) return
+  pendingFileEdit.value = file
+  readFileAsDataUrl(file).then((dataUrl) => {
+    pendingPreviewEdit.value = dataUrl
+  })
+  e.target.value = ''
+}
+
+async function confirmUploadEdit() {
+  if (!pendingFileEdit.value) return
   error.value = ''
   uploadingEdit.value = true
   try {
-    const dataUrl = await readFileAsDataUrl(file)
+    const dataUrl = await readFileAsDataUrl(pendingFileEdit.value)
     const url = await apiUploadProductImage(dataUrl)
     editForm.value.foto = url
+    clearPendingEdit()
   } catch (err) {
     error.value = err.message || 'Error al subir la imagen.'
   } finally {
     uploadingEdit.value = false
-    e.target.value = ''
   }
+}
+
+function clearPendingEdit() {
+  pendingPreviewEdit.value = ''
+  pendingFileEdit.value = null
+  if (fileInputEditRef.value) fileInputEditRef.value.value = ''
+}
+
+function clearPhotoEdit() {
+  editForm.value.foto = ''
+  clearPendingEdit()
 }
 
 function startEdit(p) {
@@ -115,9 +153,8 @@ function startEdit(p) {
     descripcion: p.descripcion ?? '',
     costo: String(p.costo ?? ''),
     foto: p.foto ?? '',
-    seccion_id: p.seccion_id ?? '',
-    orden: p.orden ?? 0,
   }
+  clearPendingEdit()
   error.value = ''
 }
 
@@ -138,15 +175,9 @@ async function submitEdit() {
       descripcion: editForm.value.descripcion?.trim() ?? '',
       costo,
       foto: editForm.value.foto?.trim() || undefined,
-      seccion_id: editForm.value.seccion_id || undefined,
-      orden: Number(editForm.value.orden) || 0,
     }
     const updated = await apiProductsPatch(id, payload)
-    productsStore.update(id, {
-      ...updated,
-      seccion_id: updated.seccion_id ?? undefined,
-      orden: updated.orden ?? 0,
-    })
+    productsStore.update(id, updated)
     editingProductId.value = null
   } catch (e) {
     error.value = e.message || 'Error al guardar.'
@@ -158,17 +189,18 @@ async function submit() {
   if (!form.value.titulo || Number.isNaN(costo)) return
   error.value = ''
   try {
+    const orden = getNextGlobalOrden()
     const payload = {
       titulo: form.value.titulo.trim(),
       descripcion: form.value.descripcion.trim(),
       costo,
       foto: form.value.foto.trim() || undefined,
-      seccion_id: form.value.seccion_id || undefined,
-      orden: Number(form.value.orden) || 0,
+      orden,
     }
     const item = await apiProductsPost(payload)
     productsStore.add(item, item.id)
-    form.value = { titulo: '', descripcion: '', costo: '', foto: '', seccion_id: '', orden: 0 }
+    form.value = { titulo: '', descripcion: '', costo: '', foto: '' }
+    clearPendingCreate()
   } catch (e) {
     error.value = e.message || 'Error al crear. ¿Está configurada la base de datos (Neon)?'
   }
@@ -179,10 +211,11 @@ async function addSection() {
   if (!titulo) return
   error.value = ''
   try {
-    const orden = sectionsStore.items.length
-    const item = await apiSectionsPost({ titulo, orden })
+    const orden = getNextGlobalOrden()
+    const subtitulo = sectionForm.value.subtitulo?.trim() ?? ''
+    const item = await apiSectionsPost({ titulo, subtitulo, orden })
     sectionsStore.add(item, item.id)
-    sectionForm.value.titulo = ''
+    sectionForm.value = { titulo: '', subtitulo: '' }
   } catch (e) {
     error.value = e.message || 'Error al crear sección.'
   }
@@ -202,94 +235,30 @@ async function removeSection(id) {
   }
 }
 
-async function sectionSubir(id) {
-  const idx = sectionsStore.items.findIndex((s) => s.id === id)
-  if (idx <= 0) return
-  const prev = sectionsStore.items[idx - 1]
-  const curr = sectionsStore.items[idx]
-  const newOrdenCurr = prev.orden
-  const newOrdenPrev = curr.orden
+async function onReorderEnd() {
+  const list = orderedListRef.value
+  let lastSectionId = null
+  for (let i = 0; i < list.length; i++) {
+    const it = list[i]
+    if (it.type === 'section') {
+      sectionsStore.setOrden(it.id, i)
+      lastSectionId = it.id
+    } else {
+      productsStore.setOrden(it.id, i)
+      productsStore.setSeccion(it.id, lastSectionId)
+    }
+  }
+  dragging.value = false
   error.value = ''
   try {
-    await Promise.all([
-      apiSectionsPatch(id, { orden: newOrdenCurr }),
-      apiSectionsPatch(prev.id, { orden: newOrdenPrev }),
-    ])
-    sectionsStore.setOrden(id, newOrdenCurr)
-    sectionsStore.setOrden(prev.id, newOrdenPrev)
+    await apiReorderItems(list.map((i) => ({ type: i.type, id: i.id })))
   } catch (e) {
-    error.value = e.message || 'Error al reordenar.'
+    error.value = e.message || 'Error al guardar el orden.'
   }
 }
 
-async function sectionBajar(id) {
-  const idx = sectionsStore.items.findIndex((s) => s.id === id)
-  if (idx < 0 || idx >= sectionsStore.items.length - 1) return
-  const next = sectionsStore.items[idx + 1]
-  const curr = sectionsStore.items[idx]
-  const newOrdenCurr = next.orden
-  const newOrdenNext = curr.orden
-  error.value = ''
-  try {
-    await Promise.all([
-      apiSectionsPatch(id, { orden: newOrdenCurr }),
-      apiSectionsPatch(next.id, { orden: newOrdenNext }),
-    ])
-    sectionsStore.setOrden(id, newOrdenCurr)
-    sectionsStore.setOrden(next.id, newOrdenNext)
-  } catch (e) {
-    error.value = e.message || 'Error al reordenar.'
-  }
-}
-
-function getFlatProductList() {
-  const out = []
-  for (const group of itemsPorSeccion.value) {
-    for (const p of group.products) out.push({ ...p, _sectionId: group.sectionId })
-  }
-  return out
-}
-
-async function productSubir(p) {
-  const flat = getFlatProductList()
-  const idx = flat.findIndex((x) => x.id === p.id)
-  if (idx <= 0) return
-  const prev = flat[idx - 1]
-  if (prev._sectionId !== p.seccion_id) return
-  const newOrdenCurr = prev.orden
-  const newOrdenPrev = p.orden
-  error.value = ''
-  try {
-    await Promise.all([
-      apiProductsPatch(p.id, { orden: newOrdenCurr }),
-      apiProductsPatch(prev.id, { orden: newOrdenPrev }),
-    ])
-    productsStore.setOrden(p.id, newOrdenCurr)
-    productsStore.setOrden(prev.id, newOrdenPrev)
-  } catch (e) {
-    error.value = e.message || 'Error al reordenar.'
-  }
-}
-
-async function productBajar(p) {
-  const flat = getFlatProductList()
-  const idx = flat.findIndex((x) => x.id === p.id)
-  if (idx < 0 || idx >= flat.length - 1) return
-  const next = flat[idx + 1]
-  if (next._sectionId !== p.seccion_id) return
-  const newOrdenCurr = next.orden
-  const newOrdenNext = p.orden
-  error.value = ''
-  try {
-    await Promise.all([
-      apiProductsPatch(p.id, { orden: newOrdenCurr }),
-      apiProductsPatch(next.id, { orden: newOrdenNext }),
-    ])
-    productsStore.setOrden(p.id, newOrdenCurr)
-    productsStore.setOrden(next.id, newOrdenNext)
-  } catch (e) {
-    error.value = e.message || 'Error al reordenar.'
-  }
+function onDragStart() {
+  dragging.value = true
 }
 
 async function archive(id) {
@@ -329,24 +298,19 @@ async function remove(id) {
     <h2>Productos</h2>
 
     <section class="secciones-block">
-      <h3>Secciones</h3>
-      <p class="hint">Las secciones agrupan productos en la tienda. Ordená las secciones y los productos dentro de cada una.</p>
-      <form class="form-inline" @submit.prevent="addSection">
-        <input v-model="sectionForm.titulo" type="text" placeholder="Título de la sección" />
+      <h3>Nueva sección</h3>
+      <p class="hint">Agregá secciones para agrupar productos en la tienda. Arrastrá los ítems en el listado para cambiar el orden.</p>
+      <form class="form-section-create" @submit.prevent="addSection">
+        <label>
+          Título de la sección
+          <input v-model="sectionForm.titulo" type="text" placeholder="Ej. Pastas rellenas" required />
+        </label>
+        <label>
+          Subtítulo (opcional)
+          <input v-model="sectionForm.subtitulo" type="text" placeholder="Ej. Con relleno de verdura o carne" />
+        </label>
         <button type="submit">Crear sección</button>
       </form>
-      <ul class="secciones-list">
-        <li v-for="(sec, i) in [...sectionsStore.items].sort((a,b) => a.orden - b.orden)" :key="sec.id" class="section-row">
-          <span class="section-titulo">{{ sec.titulo }}</span>
-          <span class="section-orden">Orden {{ sec.orden }}</span>
-          <div class="acciones">
-            <button type="button" class="btn-small" :disabled="i === 0" title="Subir" @click="sectionSubir(sec.id)">↑</button>
-            <button type="button" class="btn-small" :disabled="i === sectionsStore.items.length - 1" title="Bajar" @click="sectionBajar(sec.id)">↓</button>
-            <button type="button" class="btn-small danger" @click="removeSection(sec.id)">Eliminar</button>
-          </div>
-        </li>
-      </ul>
-      <p v-if="sectionsStore.items.length === 0" class="empty">No hay secciones. Creá una para agrupar productos.</p>
     </section>
 
     <section class="form-nuevo">
@@ -365,30 +329,39 @@ async function remove(id) {
           <input v-model="form.costo" type="number" step="0.01" min="0" required />
         </label>
         <label>
-          Sección
-          <select v-model="form.seccion_id">
-            <option value="">— Sin sección —</option>
-            <option v-for="s in [...sectionsStore.items].sort((a,b) => a.orden - b.orden)" :key="s.id" :value="s.id">{{ s.titulo }}</option>
-          </select>
-        </label>
-        <label>
-          Posición (orden dentro de la sección)
-          <input v-model.number="form.orden" type="number" min="0" />
-        </label>
-        <label>
           URL de la foto
-          <input v-model="form.foto" type="url" placeholder="https://... o subir archivo abajo" />
+          <input v-model="form.foto" type="url" placeholder="https://... o elegir archivo abajo" />
         </label>
-        <label>
-          O subir imagen
+        <div class="photo-upload-block">
           <input
+            ref="fileInputCreateRef"
+            id="photo-create"
             type="file"
             accept="image/*"
+            class="input-file-hidden"
             :disabled="uploading"
-            @change="onFileChange"
+            @change="onFilePickedCreate"
           />
-          <span v-if="uploading" class="uploading-hint">Subiendo…</span>
-        </label>
+          <label for="photo-create" class="label-file">Elegir imagen desde el dispositivo</label>
+          <div v-if="pendingPreviewCreate || form.foto" class="photo-preview-area">
+            <img
+              :src="pendingPreviewCreate || form.foto"
+              alt="Vista previa"
+              class="photo-preview-img"
+            />
+            <div class="photo-preview-actions">
+              <template v-if="pendingPreviewCreate">
+                <button type="button" class="btn-small" :disabled="uploading" @click="confirmUploadCreate">
+                  {{ uploading ? 'Subiendo…' : 'Confirmar subida' }}
+                </button>
+                <button type="button" class="btn-small" :disabled="uploading" @click="clearPendingCreate">Quitar</button>
+              </template>
+              <template v-else>
+                <button type="button" class="btn-small" @click="clearPhotoCreate">Quitar imagen</button>
+              </template>
+            </div>
+          </div>
+        </div>
         <button type="submit">Crear producto</button>
       </form>
       <p v-if="error" class="form-error">{{ error }}</p>
@@ -398,99 +371,78 @@ async function remove(id) {
     </section>
 
     <section class="lista">
-      <h3>Listado por sección</h3>
-      <div v-for="group in itemsPorSeccion" :key="group.sectionId ?? 'sin-seccion'" class="product-group">
-        <h4 class="group-title">{{ group.section?.titulo ?? 'Sin sección' }}</h4>
-        <ul>
-          <template v-for="p in group.products" :key="p.id">
-            <li v-if="editingProductId === p.id" class="product-row product-edit-row">
+      <h3>Orden de secciones y productos</h3>
+      <p class="hint">Arrastrá los ítems para cambiar el orden. Las secciones definen los títulos; los productos que queden debajo de una sección se mostrarán en ese grupo en la tienda.</p>
+      <draggable
+        v-model="orderedListRef"
+        :item-key="itemKey"
+        handle=".drag-handle"
+        ghost-class="drag-ghost"
+        chosen-class="drag-chosen"
+        drag-class="drag-dragging"
+        @start="onDragStart"
+        @end="onReorderEnd"
+      >
+        <template #item="{ element }">
+          <div class="list-item-wrap">
+            <div v-if="element.type === 'section'" class="list-item list-item-section">
+              <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
+              <div class="section-block">
+                <h4 class="section-block-title">{{ element.titulo }}</h4>
+                <p v-if="element.subtitulo" class="section-block-subtitle">{{ element.subtitulo }}</p>
+                <div class="section-separator" />
+              </div>
+              <div class="acciones">
+                <button type="button" class="btn-small danger" @click="removeSection(element.id)">Eliminar</button>
+              </div>
+            </div>
+            <div v-else-if="editingProductId === element.id" class="list-item product-edit-row">
+              <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
               <form class="edit-form" @submit.prevent="submitEdit">
                 <div class="edit-fields">
-                  <label>
-                    Título
-                    <input v-model="editForm.titulo" type="text" required />
-                  </label>
-                  <label>
-                    Descripción
-                    <textarea v-model="editForm.descripcion" rows="2" />
-                  </label>
-                  <label>
-                    Costo ($)
-                    <input v-model="editForm.costo" type="number" step="0.01" min="0" required />
-                  </label>
-                  <label>
-                    Sección
-                    <select v-model="editForm.seccion_id">
-                      <option value="">— Sin sección —</option>
-                      <option v-for="s in [...sectionsStore.items].sort((a,b) => a.orden - b.orden)" :key="s.id" :value="s.id">{{ s.titulo }}</option>
-                    </select>
-                  </label>
-                  <label>
-                    Posición
-                    <input v-model.number="editForm.orden" type="number" min="0" />
-                  </label>
-                  <label>
-                    URL foto
-                    <input v-model="editForm.foto" type="url" placeholder="URL o subir abajo" />
-                  </label>
-                  <label>
-                    Subir imagen
-                    <input type="file" accept="image/*" :disabled="uploadingEdit" @change="onFileChangeEdit" />
-                    <span v-if="uploadingEdit" class="uploading-hint">Subiendo…</span>
-                  </label>
+                  <label>Título <input v-model="editForm.titulo" type="text" required /></label>
+                  <label>Descripción <textarea v-model="editForm.descripcion" rows="2" /></label>
+                  <label>Costo ($) <input v-model="editForm.costo" type="number" step="0.01" min="0" required /></label>
+                  <label>URL foto <input v-model="editForm.foto" type="url" placeholder="URL o elegir archivo" /></label>
+                  <div class="photo-upload-block">
+                    <input ref="fileInputEditRef" id="photo-edit" type="file" accept="image/*" class="input-file-hidden" :disabled="uploadingEdit" @change="onFilePickedEdit" />
+                    <label for="photo-edit" class="label-file">Elegir imagen</label>
+                    <div v-if="pendingPreviewEdit || editForm.foto" class="photo-preview-area">
+                      <img :src="pendingPreviewEdit || editForm.foto" alt="Vista previa" class="photo-preview-img" />
+                      <div class="photo-preview-actions">
+                        <template v-if="pendingPreviewEdit">
+                          <button type="button" class="btn-small" :disabled="uploadingEdit" @click="confirmUploadEdit">{{ uploadingEdit ? 'Subiendo…' : 'Confirmar subida' }}</button>
+                          <button type="button" class="btn-small" :disabled="uploadingEdit" @click="clearPendingEdit">Quitar</button>
+                        </template>
+                        <template v-else>
+                          <button type="button" class="btn-small" @click="clearPhotoEdit">Quitar imagen</button>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="edit-actions">
                   <button type="submit" class="btn-small">Guardar</button>
                   <button type="button" class="btn-small" @click="cancelEdit">Cancelar</button>
                 </div>
               </form>
-            </li>
-            <li v-else class="product-row">
-              <span class="pos">#{{ (p.orden ?? 0) }}</span>
-              <span class="titulo">{{ p.titulo }}</span>
-              <span class="costo">${{ p.costo }}</span>
-              <span class="estado">{{ p.archivado ? 'Archivado' : 'Activo' }}</span>
+            </div>
+            <div v-else class="list-item product-row">
+              <div class="drag-handle" aria-label="Arrastrar">⋮⋮</div>
+              <span class="titulo">{{ element.titulo }}</span>
+              <span class="costo">${{ element.costo }}</span>
+              <span class="estado">{{ element.archivado ? 'Archivado' : 'Activo' }}</span>
               <div class="acciones">
-                <button type="button" class="btn-small" title="Editar" @click="startEdit(p)">Editar</button>
-                <button
-                  type="button"
-                  class="btn-small"
-                  title="Subir"
-                  :disabled="group.products[0]?.id === p.id"
-                  @click="productSubir(p)"
-                >↑</button>
-                <button
-                  type="button"
-                  class="btn-small"
-                  title="Bajar"
-                  :disabled="group.products[group.products.length - 1]?.id === p.id"
-                  @click="productBajar(p)"
-                >↓</button>
-                <button
-                  v-if="p.archivado"
-                  type="button"
-                  class="btn-small"
-                  @click="unarchive(p.id)"
-                >
-                  Desarchivar
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="btn-small"
-                  @click="archive(p.id)"
-                >
-                  Archivar
-                </button>
-                <button type="button" class="btn-small danger" @click="remove(p.id)">
-                  Eliminar
-                </button>
+                <button type="button" class="btn-small" @click="startEdit(element)">Editar</button>
+                <button v-if="element.archivado" type="button" class="btn-small" @click="unarchive(element.id)">Desarchivar</button>
+                <button v-else type="button" class="btn-small" @click="archive(element.id)">Archivar</button>
+                <button type="button" class="btn-small danger" @click="remove(element.id)">Eliminar</button>
               </div>
-            </li>
-          </template>
-        </ul>
-      </div>
-      <p v-if="productsStore.items.length === 0" class="empty">No hay productos.</p>
+            </div>
+          </div>
+        </template>
+      </draggable>
+      <p v-if="orderedListRef.length === 0" class="empty">No hay secciones ni productos. Creá una sección o un producto arriba.</p>
     </section>
   </div>
 </template>
@@ -534,17 +486,78 @@ async function remove(id) {
   padding: 0.1em 0.3em;
   border-radius: 4px;
 }
+.lista :deep(.list-item-wrap) {
+  margin-bottom: 0.5rem;
+}
+.list-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+}
+.drag-handle {
+  cursor: grab;
+  padding: 0.25rem 0.35rem;
+  color: var(--color-text-muted);
+  user-select: none;
+  touch-action: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.list-item-section .section-block {
+  flex: 1;
+  min-width: 0;
+}
+.section-block-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin: 0 0 0.2rem;
+  color: var(--color-heading);
+}
+.section-block-subtitle {
+  font-family: var(--font-subtitle);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+}
+.section-separator {
+  width: 100%;
+  grid-column: 1 / -1;
+  height: 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-top: 0.25rem;
+}
+.list-item-section {
+  flex-direction: column;
+  align-items: stretch;
+}
+.list-item-section .section-block {
+  width: 100%;
+}
+.list-item-section .acciones {
+  align-self: flex-end;
+}
+.drag-ghost {
+  opacity: 0.5;
+  background: var(--color-background-mute);
+}
+.drag-chosen {
+  background: var(--color-background-soft);
+}
+.drag-dragging {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 .lista ul {
   list-style: none;
   padding: 0;
 }
 .product-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
+  border-radius: 8px;
 }
 .product-row .titulo {
   flex: 1;
@@ -592,36 +605,72 @@ async function remove(id) {
   color: var(--color-text-muted);
   margin-bottom: 1rem;
 }
-.form-inline {
+.form-section-create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.form-section-create label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+.form-section-create input {
+  min-width: 220px;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.input-file-hidden {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+.label-file {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-mute);
+  transition: border-color 0.2s, background 0.2s;
+}
+.label-file:hover {
+  border-color: var(--color-accent);
+  background: rgba(192, 47, 54, 0.08);
+}
+.photo-upload-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.photo-preview-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.photo-preview-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.photo-preview-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-.form-inline input {
-  min-width: 200px;
-  padding: 0.4rem 0.6rem;
-}
-.secciones-list {
-  list-style: none;
-  padding: 0;
-}
-.section-row {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-.section-titulo {
-  flex: 1;
-  min-width: 120px;
-  font-weight: 600;
-}
-.section-orden {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
 }
 .product-group {
   margin-bottom: 1.5rem;

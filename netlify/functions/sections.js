@@ -25,10 +25,11 @@ exports.handler = async (event) => {
     const method = event.httpMethod
 
     if (method === 'GET') {
-      const rows = await sql`SELECT id, titulo, orden FROM sections ORDER BY orden ASC, id ASC`
+      const rows = await sql`SELECT id, titulo, subtitulo, orden FROM sections ORDER BY orden ASC, id ASC`
       const items = rows.map((r) => ({
         id: r.id,
         titulo: r.titulo,
+        subtitulo: r.subtitulo ?? '',
         orden: Number(r.orden),
       }))
       return { statusCode: 200, headers, body: JSON.stringify(items) }
@@ -38,11 +39,12 @@ exports.handler = async (event) => {
       const body = JSON.parse(event.body || '{}')
       const id = String(Date.now())
       const orden = Number(body.orden) ?? 0
+      const subtitulo = body.subtitulo ?? ''
       await sql`
-        INSERT INTO sections (id, titulo, orden)
-        VALUES (${id}, ${body.titulo ?? ''}, ${orden})
+        INSERT INTO sections (id, titulo, subtitulo, orden)
+        VALUES (${id}, ${body.titulo ?? ''}, ${subtitulo}, ${orden})
       `
-      const item = { id, titulo: body.titulo ?? '', orden }
+      const item = { id, titulo: body.titulo ?? '', subtitulo, orden }
       return { statusCode: 201, headers, body: JSON.stringify(item) }
     }
 
@@ -51,13 +53,19 @@ exports.handler = async (event) => {
       const id = event.queryStringParameters?.id
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: 'id required' }) }
       if (body.titulo !== undefined) await sql`UPDATE sections SET titulo = ${body.titulo} WHERE id = ${id}`
+      if (body.subtitulo !== undefined) await sql`UPDATE sections SET subtitulo = ${body.subtitulo} WHERE id = ${id}`
       if (typeof body.orden === 'number') await sql`UPDATE sections SET orden = ${body.orden} WHERE id = ${id}`
-      const [row] = await sql`SELECT id, titulo, orden FROM sections WHERE id = ${id}`
+      const [row] = await sql`SELECT id, titulo, subtitulo, orden FROM sections WHERE id = ${id}`
       if (!row) return { statusCode: 404, headers, body: JSON.stringify({ error: 'not found' }) }
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ id: row.id, titulo: row.titulo, orden: Number(row.orden) }),
+        body: JSON.stringify({
+          id: row.id,
+          titulo: row.titulo,
+          subtitulo: row.subtitulo ?? '',
+          orden: Number(row.orden),
+        }),
       }
     }
 

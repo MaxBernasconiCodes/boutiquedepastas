@@ -80,6 +80,16 @@ export async function apiSectionsDelete(id) {
   if (!res.ok && res.status !== 204) throw new Error(await res.text())
 }
 
+/** Reordenar lista unificada (secciones + productos). body: { items: [ { type: 'section'|'product', id } ] } */
+export async function apiReorderItems(items) {
+  const res = await request('/.netlify/functions/reorder-items', {
+    method: 'POST',
+    body: JSON.stringify({ items }),
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
+}
+
 /** Subir imagen de producto a Netlify Blobs; devuelve la URL para guardar en Neon (campo foto). */
 export async function apiUploadProductImage(base64DataUrl) {
   const res = await request('/.netlify/functions/upload-product-image', {
